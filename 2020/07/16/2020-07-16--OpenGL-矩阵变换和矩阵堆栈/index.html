@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="OpenGL 的矩阵变换OpenGL 渲染 3D 物体到屏幕上的过程其实类似于我们平时使用的相机拍照的过程, 这个步骤大致如下:  把相机固定在三脚架并让它对准场景 (视图变换) 把场景中的物体调整摆放好 (模型变换) 选择相机的镜头, 并调整放大倍数 (投影变换) 确定最终照片的大小 (视口变换)   注: 视图变换必须要在模型变换之前, 其它可以在任何时候。  接下来我们来分开了解一下上面的每">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenGL--矩阵变换和矩阵堆栈">
+<meta property="og:url" content="http://example.com/2020/07/16/2020-07-16--OpenGL-%E7%9F%A9%E9%98%B5%E5%8F%98%E6%8D%A2%E5%92%8C%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="OpenGL 的矩阵变换OpenGL 渲染 3D 物体到屏幕上的过程其实类似于我们平时使用的相机拍照的过程, 这个步骤大致如下:  把相机固定在三脚架并让它对准场景 (视图变换) 把场景中的物体调整摆放好 (模型变换) 选择相机的镜头, 并调整放大倍数 (投影变换) 确定最终照片的大小 (视口变换)   注: 视图变换必须要在模型变换之前, 其它可以在任何时候。  接下来我们来分开了解一下上面的每">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/173712cfd06625d8tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/173712d3dc02b395tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/173712d93b02da73tplv-t2oaga2asx-image.image">
+<meta property="article:published_time" content="2020-07-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-01T02:57:10.595Z">
+<meta property="article:author" content="Ccc">
+<meta property="article:tag" content="OpenGL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:/Users/rinna/OneDrive/MarkDown/image/173712cfd06625d8tplv-t2oaga2asx-image.image">
+
+<link rel="canonical" href="http://example.com/2020/07/16/2020-07-16--OpenGL-%E7%9F%A9%E9%98%B5%E5%8F%98%E6%8D%A2%E5%92%8C%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>OpenGL--矩阵变换和矩阵堆栈 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/07/16/2020-07-16--OpenGL-%E7%9F%A9%E9%98%B5%E5%8F%98%E6%8D%A2%E5%92%8C%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ccc">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenGL--矩阵变换和矩阵堆栈
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-16 00:00:00" itemprop="dateCreated datePublished" datetime="2020-07-16T00:00:00+08:00">2020-07-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-01 10:57:10" itemprop="dateModified" datetime="2022-06-01T10:57:10+08:00">2022-06-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="OpenGL-的矩阵变换"><a href="#OpenGL-的矩阵变换" class="headerlink" title="OpenGL 的矩阵变换"></a>OpenGL 的矩阵变换</h1><p>OpenGL 渲染 3D 物体到屏幕上的过程其实类似于我们平时使用的相机拍照的过程, 这个步骤大致如下:</p>
+<ol>
+<li>把相机固定在三脚架并让它对准场景 (视图变换)</li>
+<li>把场景中的物体调整摆放好 (模型变换)</li>
+<li>选择相机的镜头, 并调整放大倍数 (投影变换)</li>
+<li>确定最终照片的大小 (视口变换)</li>
+</ol>
+<blockquote>
+<p><strong>注: 视图变换必须要在模型变换之前, 其它可以在任何时候。</strong></p>
+</blockquote>
+<p>接下来我们来分开了解一下上面的每个步骤:</p>
+<h2 id="视图变换"><a href="#视图变换" class="headerlink" title="视图变换"></a>视图变换</h2><ul>
+<li><p>视图变换, 设置摄像机的位置。是应用到场景中的第一种变换, 它用来确定场景中的有利位置。默认情况下, 透视投影位于原点 (0, 0, 0), 并且沿着 z轴 负方向进行观察。</p>
+</li>
+<li><p>视图变换可以将观察者放在你希望的任何位置, 并允许在任何方向上观察场景。确定视图变换就像在场景中放置观察者并让它指向某一个方向。</p>
+</li>
+<li><p><strong>从大局上考虑, 在应用任何其他模型变换之前, 必须先应用视图变换</strong>。这样做是因为, 对于视觉坐标系而言, 视图变换移动了当前的工作的坐标系; 后续的变化都会基于新调整的坐标系进行。</p>
+</li>
+</ul>
+<h2 id="模型变换"><a href="#模型变换" class="headerlink" title="模型变换"></a>模型变换</h2><ul>
+<li><p>设置物体的位置和方向, 包括: 旋转, 移动, 缩放, 而且要注意组合使用他们的顺序, 像先平移再旋转与先旋转再平移它们的表现是不一样的。</p>
+</li>
+<li><p>有时可以不必通过移动摄像机(视图变换)来观察物体, 而是移动这个物体(模型变换), 这两个方式都能实现同样地效果, 有时使用其中一种变换比使用另一种变换要方便得多。这也是把视图变换和模型变换都统一为模型视图矩阵的原因。</p>
+</li>
+</ul>
+<p><img src="C:/Users/rinna/OneDrive/MarkDown/image/173712cfd06625d8tplv-t2oaga2asx-image.image"></p>
+<ul>
+<li>从上面的图也可以看到, 同一个物体, 先经过旋转或者先经过平移, 最后得到的结果是不一样的</li>
+</ul>
+<h2 id="投影变换"><a href="#投影变换" class="headerlink" title="投影变换"></a>投影变换</h2><ul>
+<li>设置视景体, 将3维坐标投影为2维屏幕坐标, 位于视景体之外的东西将被裁剪掉。</li>
+<li>它分为两种投影: 正投影和透视投影, 其中正投影就是平行投影, 不管远近物体看上去都一样。而透视投影则是近大远小的真实效果。</li>
+</ul>
+<p><img src="C:/Users/rinna/OneDrive/MarkDown/image/173712d3dc02b395tplv-t2oaga2asx-image.image"></p>
+<h2 id="视口变换"><a href="#视口变换" class="headerlink" title="视口变换"></a>视口变换</h2><p>其实就是指定最终图像显示在屏幕哪个区域, 一般我们是设置和屏幕一样大。</p>
+<h2 id="模型视图矩阵"><a href="#模型视图矩阵" class="headerlink" title="模型视图矩阵"></a>模型视图矩阵</h2><h3 id="视图二元性"><a href="#视图二元性" class="headerlink" title="视图二元性"></a>视图二元性</h3><p>实际上, 上面的视图变换和模型变换按照它们的内部效果和对场景的最终外观来说是一样的。将两者区分开纯粹是为了程序员的方便, 将对象向后移动和将参考系向前移动在视觉上没有区别。</p>
+<p>视觉变换和模型变换一样, 都应用在整个场景中, 在场景中的对象常常在进行视图变换后单独进行模型变换。术语 “<strong>模型视图</strong>” 是指这两种变换在变换管线中进行组合, 成为一个单独的矩阵, 即 <strong>模型视图矩阵</strong> 。</p>
+<h3 id="模型视图矩阵-1"><a href="#模型视图矩阵-1" class="headerlink" title="模型视图矩阵"></a>模型视图矩阵</h3><p>模型视图矩阵是一个 <code>4x4 矩阵</code> , 它表示变换后的坐标系, 我们可以用来设置对象和确定对象的方向。为图元提供的顶点将作为一个单列矩阵的形式来使用, 并乘以一个模型视图矩阵来获得一个相对于视觉坐标的经过变换的新坐标。</p>
+<p>我们可以调用 <code>math3d</code> 库中的以下函数来进行矩阵变换操作:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1、单位矩阵</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">m3dLoadIdentity44</span><span class="params">(M3DMatrix44f  m)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2、创建平移矩阵</span></span><br><span class="line"><span class="comment">// 一个平移矩阵仅仅是将我们的顶点沿着3个坐标轴的一个或多个进行平移。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">m3dTranslationMatrix44</span><span class="params">(M3DMatrix44f m,<span class="type">float</span> x,<span class="type">float</span> y,<span class="type">float</span> z)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3、创建旋转矩阵</span></span><br><span class="line"><span class="comment">// 围绕一个x、y和z变量指定的向量来进行旋转。旋转的角度沿逆时针方向按照弧度计算，由变量angle指定。可以围绕一个轴进行旋转，也可以围绕任意一个由x、y、和z变量指定的向量来进行旋转。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">m3dRotationMatrix44</span><span class="params">(M3DMatrix44f m,<span class="type">float</span> angle,<span class="type">float</span> x,<span class="type">float</span> y,<span class="type">float</span> z)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 4、创建缩放矩阵</span></span><br><span class="line"><span class="comment">// 缩放矩阵可以沿着3个坐标轴方向按照指定因子放大或缩小所有顶顶啊，以改变对象的大小。</span></span><br><span class="line"><span class="type">void</span> m3dScaleMatrix44（M3DMatrix44f m,<span class="type">float</span> xScale,<span class="type">float</span> yScale,<span class="type">float</span> zScale）</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 5、综合变换</span></span><br><span class="line"><span class="comment">// 将两种变换加在加在一起就是综合变换，只需将两个矩阵相乘</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">m3dMatrixMultiply44</span><span class="params">(M3DMatrix44f product,<span class="type">const</span> M3DMatrix44f a,<span class="type">const</span> M3DMatrix b)</span></span>;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h1 id="矩阵堆栈"><a href="#矩阵堆栈" class="headerlink" title="矩阵堆栈"></a>矩阵堆栈</h1><h2 id="矩阵相关"><a href="#矩阵相关" class="headerlink" title="矩阵相关"></a>矩阵相关</h2><h3 id="矩阵"><a href="#矩阵" class="headerlink" title="矩阵"></a>矩阵</h3><p>矩阵是一种功能很强大的数学工具, 它大大简化了求解变量之间有复杂关系的方程式或者方程组的过程。矩阵在坐标变换中使用的非常广泛。</p>
+<p>举例: 假如在空间中有一个点 A 由 x,y,z 坐标轴定义, 现在将它围绕任意点任意方向旋转一定的角度, 如果我们想要知道点 A 现在的位置, 这时候就需要用到矩阵。因为现在的 A 点的 x 坐标不仅与原来的 x坐标 位置有关, 还和 旋转参数 以及 y 和 z 坐标的值有关, 解决这种问题就是矩阵最擅长的。</p>
+<h3 id="投影矩阵"><a href="#投影矩阵" class="headerlink" title="投影矩阵"></a>投影矩阵</h3><p>投影矩阵分为 正投影 和 透视投影:</p>
+<ul>
+<li>正投影会产生一个平行投影, 这种投影在绘制从远处观察不产生任何透视缩短的特定物体是非常有用。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用这个函数设置正投影</span></span><br><span class="line">GLFrustum::<span class="built_in">SetOrthographic</span>(GLfloat xMin, GLfloat xMax,   GLfloat yMin, GLfloat yMax, GLfloat zMin, GLfloat zMax);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>透视投影会有一个 3D 效果, 看起来更加逼真, 渲染 3D 图形时常常选择透视投影</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用这个函数设置透视投影</span></span><br><span class="line">GLFrustum::<span class="built_in">SetPerspective</span>(<span class="type">float</span> fFov, <span class="type">float</span> fAspect, <span class="type">float</span> fNear, <span class="type">float</span> fFar);</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="矩阵堆栈-1"><a href="#矩阵堆栈-1" class="headerlink" title="矩阵堆栈"></a>矩阵堆栈</h2><h3 id="什么是矩阵堆栈"><a href="#什么是矩阵堆栈" class="headerlink" title="什么是矩阵堆栈?"></a>什么是矩阵堆栈?</h3><p>OpenGL 的矩阵堆栈指的是 <strong>内存中专门用来存放矩阵数据的某块特殊区域</strong> 。一般来说, 矩阵堆栈常用于构造 具有继承性的模型(由一些简单目标构成的复杂模型)。矩阵堆栈对于复杂模型运动过程中的多个变换操作之间的联系与独立十分有利。</p>
+<h3 id="为什么要使用矩阵堆栈"><a href="#为什么要使用矩阵堆栈" class="headerlink" title="为什么要使用矩阵堆栈?"></a>为什么要使用矩阵堆栈?</h3><p>在绘制图形后, 可能会发生各种各样的变化和复杂场景切换, 这些变换实现的原理一般都是通过矩阵来进行操作的。OpenGL 中的变换一般包括 视图变换、模型变换、投影变换等, 每次变换后, OpenGL 都会呈现一种新的状态 (状态机) 。</p>
+<p>但是有些时候在经过变换之后我们想回到之前的状态, 这个时候就是为什么要使用矩阵堆栈的重点了。他给我们提供了两个函数 <code>PushMatrix()</code> 和 <code>PopMatrix()</code> , 通过这两个函数帮助我们可以回到之前的状态, 并且当前的所有操作都不会影响到之前的状态。下面来看一下矩阵堆栈是如何使用的, 以及 前面的 2 个函数是如何工作的。</p>
+<h3 id="矩阵堆栈的使用"><a href="#矩阵堆栈的使用" class="headerlink" title="矩阵堆栈的使用"></a>矩阵堆栈的使用</h3><h4 id="1-使用"><a href="#1-使用" class="headerlink" title="1. 使用"></a>1. 使用</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//类型</span></span><br><span class="line">GLMatrixStack::<span class="built_in">GLMatrixStack</span>(<span class="type">int</span> iStackDepth = <span class="number">64</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//在堆栈顶部载入一个单元矩阵</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">GLMatrixStack::LoadIdentity</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//在堆栈顶部载⼊任何矩阵 //参数:4*4矩阵</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">GLMatrixStack::LoadMatrix</span><span class="params">(<span class="type">const</span> M3DMatrix44f m)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//矩阵乘以矩阵堆栈顶部矩阵，相乘结果存储到堆栈的顶部</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">GLMatrixStack::MultMatrix</span><span class="params">(<span class="type">const</span> M3DMatrix44f)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取矩阵堆栈顶部的值 GetMatrix 函数 </span></span><br><span class="line"><span class="comment">//为了适应GLShaderMananger的使⽤用，或者获取顶部矩阵的副本</span></span><br><span class="line"><span class="function"><span class="type">const</span> M3DMatrix44f &amp; <span class="title">GLMatrixStack::GetMatrix</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">GLMatrixStack::GetMatrix</span><span class="params">(M3DMatrix44f mMatrix)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-压栈、出栈"><a href="#2-压栈、出栈" class="headerlink" title="2. 压栈、出栈"></a>2. 压栈、出栈</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//将当前矩阵压入堆栈(栈顶矩阵copy 一份到栈顶)</span></span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">GLMatrixStack::PushMatrix</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将M3DMatrix44f 矩阵对象压入当前矩阵堆栈</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">PushMatrix</span><span class="params">(<span class="type">const</span> M3DMatrix44f mMatrix)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将GLFame 对象压入矩阵对象</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">PushMatrix</span><span class="params">(GLFame &amp;frame)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//出栈(出栈指的是移除顶部的矩阵对象)</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">GLMatrixStack::PopMatrix</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>下面通过一张图片来看一下 压栈和出栈的过程 (ps: 图片来自网络):</p>
+<p><img src="C:/Users/rinna/OneDrive/MarkDown/image/173712d93b02da73tplv-t2oaga2asx-image.image"></p>
+<center>入栈和出栈</center>
+>1. 在调用 `PushMatrix()` 方法后, 栈顶会被copy一份, 然后作为新的栈顶
+>2. 使用 `MultMatrix()` 进行矩阵相乘时, 会将矩阵与之前copy 的矩阵相乘, 然后将得到新的矩阵覆盖之前 copy 的
+>3. 使用 `PopMatrix()` 出栈, 移除栈顶矩阵对象
+>4. 使用 `LoadMatrix()` 加载矩阵到栈顶, 如果没有传入任何矩阵, 默认会将单元矩阵压入栈顶
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/OpenGL/" rel="tag"># OpenGL</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/14/2020-07-14-iOS-%E6%8E%A2%E7%B4%A2--%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93/" rel="prev" title="iOS 探索--离屏渲染">
+      <i class="fa fa-chevron-left"></i> iOS 探索--离屏渲染
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/09/2020-09-09-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%85%B3%E9%A2%98%E7%9B%AE/" rel="next" title="数据结构与算法-链表相关题目">
+      数据结构与算法-链表相关题目 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OpenGL-%E7%9A%84%E7%9F%A9%E9%98%B5%E5%8F%98%E6%8D%A2"><span class="nav-number">1.</span> <span class="nav-text">OpenGL 的矩阵变换</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E5%8F%98%E6%8D%A2"><span class="nav-number">1.1.</span> <span class="nav-text">视图变换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%8F%98%E6%8D%A2"><span class="nav-number">1.2.</span> <span class="nav-text">模型变换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%95%E5%BD%B1%E5%8F%98%E6%8D%A2"><span class="nav-number">1.3.</span> <span class="nav-text">投影变换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%8F%A3%E5%8F%98%E6%8D%A2"><span class="nav-number">1.4.</span> <span class="nav-text">视口变换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%A7%86%E5%9B%BE%E7%9F%A9%E9%98%B5"><span class="nav-number">1.5.</span> <span class="nav-text">模型视图矩阵</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E4%BA%8C%E5%85%83%E6%80%A7"><span class="nav-number">1.5.1.</span> <span class="nav-text">视图二元性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%A7%86%E5%9B%BE%E7%9F%A9%E9%98%B5-1"><span class="nav-number">1.5.2.</span> <span class="nav-text">模型视图矩阵</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88"><span class="nav-number">2.</span> <span class="nav-text">矩阵堆栈</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9F%A9%E9%98%B5%E7%9B%B8%E5%85%B3"><span class="nav-number">2.1.</span> <span class="nav-text">矩阵相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9F%A9%E9%98%B5"><span class="nav-number">2.1.1.</span> <span class="nav-text">矩阵</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5"><span class="nav-number">2.1.2.</span> <span class="nav-text">投影矩阵</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88-1"><span class="nav-number">2.2.</span> <span class="nav-text">矩阵堆栈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88"><span class="nav-number">2.2.1.</span> <span class="nav-text">什么是矩阵堆栈?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%BD%BF%E7%94%A8%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88"><span class="nav-number">2.2.2.</span> <span class="nav-text">为什么要使用矩阵堆栈?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.2.3.</span> <span class="nav-text">矩阵堆栈的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E4%BD%BF%E7%94%A8"><span class="nav-number">2.2.3.1.</span> <span class="nav-text">1. 使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%8E%8B%E6%A0%88%E3%80%81%E5%87%BA%E6%A0%88"><span class="nav-number">2.2.3.2.</span> <span class="nav-text">2. 压栈、出栈</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ccc"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Ccc</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ccc</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

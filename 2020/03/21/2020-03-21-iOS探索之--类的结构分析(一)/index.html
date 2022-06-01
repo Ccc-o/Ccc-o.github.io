@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="在前面的几篇文章对 iOS 对象的原理进行了探索, 那么类在底层的实现又是什么样子的呢? 类是以什么样的形式存在的? 他的结构又是什么样子的呢? 接下来进行对类的一些相关内容探索, 看一下他的真面目。  类的定义  说到 类 , 我相信看这篇文章的人都不会陌生, 那么什么是类呢?   12类 (Class) 是面向对象程序设计 (OOP, Object-Oriented Programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS探索之--类的结构分析(一)">
+<meta property="og:url" content="http://example.com/2020/03/21/2020-03-21-iOS%E6%8E%A2%E7%B4%A2%E4%B9%8B--%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90(%E4%B8%80)/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="在前面的几篇文章对 iOS 对象的原理进行了探索, 那么类在底层的实现又是什么样子的呢? 类是以什么样的形式存在的? 他的结构又是什么样子的呢? 接下来进行对类的一些相关内容探索, 看一下他的真面目。  类的定义  说到 类 , 我相信看这篇文章的人都不会陌生, 那么什么是类呢?   12类 (Class) 是面向对象程序设计 (OOP, Object-Oriented Programming">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb18cf89e5e04tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb1a428eaa177tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/170fb1a69d6895ebtplv-t2oaga2asx-image.image">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb1c11db219fetplv-t2oaga2asx-image.image">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb1da26e94d12tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb237c04cc929tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb239ef8a57cbtplv-t2oaga2asx-image.image">
+<meta property="og:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb24005d2ebbbtplv-t2oaga2asx-image.image">
+<meta property="article:published_time" content="2020-03-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-01T03:05:17.631Z">
+<meta property="article:author" content="Ccc">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb18cf89e5e04tplv-t2oaga2asx-image.image">
+
+<link rel="canonical" href="http://example.com/2020/03/21/2020-03-21-iOS%E6%8E%A2%E7%B4%A2%E4%B9%8B--%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90(%E4%B8%80)/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>iOS探索之--类的结构分析(一) | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/03/21/2020-03-21-iOS%E6%8E%A2%E7%B4%A2%E4%B9%8B--%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90(%E4%B8%80)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ccc">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          iOS探索之--类的结构分析(一)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-21 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-21T00:00:00+08:00">2020-03-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-01 11:05:17" itemprop="dateModified" datetime="2022-06-01T11:05:17+08:00">2022-06-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">iOS底层学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p> 在前面的几篇文章对 <code>iOS</code> 对象的原理进行了探索, 那么类在底层的实现又是什么样子的呢? 类是以什么样的形式存在的? 他的结构又是什么样子的呢? 接下来进行对类的一些相关内容探索, 看一下他的真面目。</p>
+</blockquote>
+<h2 id="类的定义"><a href="#类的定义" class="headerlink" title="类的定义"></a>类的定义</h2><blockquote>
+<p> 说到 <code>类</code> , 我相信看这篇文章的人都不会陌生, 那么什么是类呢? </p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">类 (Class) 是面向对象程序设计 (OOP, Object-Oriented Programming) 实现信息封装的基础。类是一种用户自定义的数据类型,</span><br><span class="line">也称类类型。每个类包含数据说明和一组操作数据或传递信息的函数(或者方法)。类的实例称为对象。</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>iOS</code> 中, 我们知道大多数情况下我们使用的类都是从 <code>NSObject</code> 这个基类所派生出来的, 在 <code>OC</code> 的底层, 我们的类到底是什么样子的呢? 接下来开始我们的探索:</p>
+<ol>
+<li>首先在我们之前的源码里面去尝试去全局搜索一下 <code>objc_class</code>, 搜索发现了一个 <code>objc_class</code> 的结构体实现:</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// Class</span><br><span class="line">/// An opaque type that represents an Objective-C class.</span><br><span class="line">typedef struct objc_class *Class;</span><br><span class="line"></span><br><span class="line">// objc_class</span><br><span class="line">struct objc_class &#123;</span><br><span class="line">    Class _Nonnull isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class _Nullable super_class                              OBJC2_UNAVAILABLE;</span><br><span class="line">    const char * _Nonnull name                               OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list * _Nullable ivars                  OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_method_list * _Nullable * _Nullable methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache * _Nonnull cache                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list * _Nullable protocols          OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br><span class="line">/* Use `Class` instead of `struct objc_class *` */</span><br></pre></td></tr></table></figure>
+
+<p>可以看出 <code>Class</code> 本质其实是一个 <code>objc_class</code> 类型的 <strong>结构体指针</strong>, 但是有一个东西需要注意 <code>OBJC2_UNAVAILABLE</code>, 从该宏定义的名字可以看出, 这个定义在 <code>OBJC2</code> 中已经废弃掉了。</p>
+<blockquote>
+<p>关于 <code>OBJC2_UNAVAILABLE</code> 的宏定义, 我在 <code>objc</code> 源码中找到了 :</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;/* OBJC2_UNAVAILABLE: unavailable in objc 2.0, deprecated in Leopard */</span><br><span class="line">&gt;#if !defined(OBJC2_UNAVAILABLE)</span><br><span class="line">&gt;#   if __OBJC2__</span><br><span class="line">&gt;#       define OBJC2_UNAVAILABLE UNAVAILABLE_ATTRIBUTE</span><br><span class="line">&gt;#   else</span><br><span class="line">  /* plain C code also falls here, but this is close enough */</span><br><span class="line">&gt;#       define OBJC2_UNAVAILABLE                                       \</span><br><span class="line">      __OSX_DEPRECATED(10.5, 10.5, &quot;not available in __OBJC2__&quot;) \</span><br><span class="line">      __IOS_DEPRECATED(2.0, 2.0, &quot;not available in __OBJC2__&quot;)   \</span><br><span class="line">      __TVOS_UNAVAILABLE __WATCHOS_UNAVAILABLE __BRIDGEOS_UNAVAILABLE</span><br><span class="line">&gt;#   endif</span><br><span class="line">&gt;#endif</span><br></pre></td></tr></table></figure>
+</blockquote>
+<ol start="2">
+<li>接下来继续在上一步的搜索结果中查找, 在 <code>objc-runtime-new</code> 中又发现了新的声明</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">// objc_class (一个隐藏的 ISA), 继承自 objc_object</span><br><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">    // Class ISA; </span><br><span class="line">    Class superclass; </span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">    class_rw_t *data() &#123; </span><br><span class="line">        return bits.data();</span><br><span class="line">    &#125;</span><br><span class="line">    ......省略</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// objc_object (包含 isa)</span><br><span class="line">/// Represents an instance of a class.</span><br><span class="line">struct objc_object &#123;</span><br><span class="line">    Class _Nonnull isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这是一个新的关于 <code>objc_class</code> 定义, 发现他继承自 <code>objc_object</code> , 并且 <code>isa</code> 就是从 <code>objc_object</code> 继承过来的, 并没有自己去定义。那么从类的结构其实也验证了之前的 isa 分析的结论就是: 类也有自己的 <code>isa</code>, 并且类的 <code>isa</code> 是指向的元类, <strong>类其实也是一种对象</strong>。</p>
+<blockquote>
+<p><strong>万物皆对象</strong></p>
+<p>每个实例对象都有个 isa 指针, 指向对象的 (Class)类; 而类对象里也有个 isa 指针, 指向的是 meteClass(元类)。关于 isa 的指向可以去看看我之前的文章 <a target="_blank" rel="noopener" href="https://juejin.im/post/6844904095141068814">iOS探索–isa的初始化和指向分析</a></p>
+</blockquote>
+<h2 id="类的结构分析"><a href="#类的结构分析" class="headerlink" title="类的结构分析"></a>类的结构分析</h2><p>在上面的过程中我们找到了关于类的定义, 接下来具体看看类的结构是什么样子的? 每一部分的作用又是什么? (注意, 这里内存占用情况默认为 64位情况下)</p>
+<h3 id="1-Class-isa"><a href="#1-Class-isa" class="headerlink" title="1. Class isa"></a>1. Class isa</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// Class (结构体指针)</span><br><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure>
+
+<p>类对象中的 <code>isa</code> 指针, 用于关联 <code>元类</code> , 关于这一点在之前的 <code>isa</code> 指向流程图中可以看出来。这里的 <code>Class</code> 类型是一个指针, 所以 <code>isa</code> 占用 8 字节。</p>
+<h3 id="2-Class-superclass"><a href="#2-Class-superclass" class="headerlink" title="2. Class superclass"></a>2. Class superclass</h3><p>根据名字应该可以看出来表示 <code>当前类的父类</code> ,同样是 <code>Class</code> 类型, 所以 <code>superclass</code> 也占 8 个字节。</p>
+<h3 id="3-cache-t-cache"><a href="#3-cache-t-cache" class="headerlink" title="3. cache_t cache"></a>3. cache_t cache</h3><p>缓存, 用于缓存已经调用的方法, 可以加速方法的调用, 具体分析我们放到以后。接下来分析一下他的内存占用情况:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">struct cache_t &#123;</span><br><span class="line">    struct bucket_t *_buckets; // 8</span><br><span class="line">    mask_t _mask;  // 4</span><br><span class="line">    mask_t _occupied; // 4</span><br><span class="line">    </span><br><span class="line">    ......函数</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//</span><br><span class="line">#if __LP64__</span><br><span class="line">typedef uint32_t mask_t;  // x86_64 &amp; arm64 asm are less efficient with 16-bits</span><br><span class="line">#else</span><br><span class="line">typedef uint16_t mask_t;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">//</span><br><span class="line">#ifndef _UINT32_T</span><br><span class="line">#define _UINT32_T</span><br><span class="line">typedef unsigned int uint32_t;</span><br><span class="line">#endif /* _UINT32_T */</span><br></pre></td></tr></table></figure>
+
+<p><code>cache_t</code> 结构体包含 一个结构体指针和两个 <code>mask_t</code> 类型的成员变量, 且 <code>mask_t</code> 在 64位情况下为 int 类型。所以 <code>cache</code> 部分总共占用内存为 16 位。</p>
+<h3 id="4-class-data-bits-t-bits"><a href="#4-class-data-bits-t-bits" class="headerlink" title="4. class_data_bits_t bits"></a>4. class_data_bits_t bits</h3><p><code>bits</code> 也是一个结构体类型, 当我们去查看 <code>objc_class</code> 里面的函数时, 会发现很多地方都跟 <code>bits</code> 有关。然后尝试查看 <code>bits</code> 的函数实现, 发现了一个有趣的东西, 内容如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">class_rw_t* data() &#123;</span><br><span class="line">  return (class_rw_t *)(bits &amp; FAST_DATA_MASK);</span><br><span class="line">&#125;</span><br><span class="line">//</span><br><span class="line">struct class_rw_t &#123;</span><br><span class="line">    // Be warned that Symbolication knows the layout of this structure.</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint32_t version;</span><br><span class="line">    const class_ro_t *ro;</span><br><span class="line">    method_array_t methods;</span><br><span class="line">    property_array_t properties;</span><br><span class="line">    protocol_array_t protocols;</span><br><span class="line">    Class firstSubclass;</span><br><span class="line">    Class nextSiblingClass;</span><br><span class="line">    char *demangledName;</span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">    uint32_t index;</span><br><span class="line">#endif</span><br><span class="line"> 		</span><br><span class="line">  	/*</span><br><span class="line">  	...函数</span><br><span class="line">  	*/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>class_data_bits_t</code> 的 <code>data()</code> 函数返回了一个 <code>class_rw_t</code> 类型的指针对象, 然后在 <code>class_rw_t</code> 结构体里面看到了对 <code>methods</code>、<code>properties</code>、<code>protocols</code> 等的声明。难道我们的类声明的方法、属性等存储在这里面吗, 接下来一起着重对这个 <code>bits</code> 来进行研究看看。</p>
+<h2 id="类的结构探究"><a href="#类的结构探究" class="headerlink" title="类的结构探究"></a>类的结构探究</h2><h3 id="1-准备"><a href="#1-准备" class="headerlink" title="1. 准备"></a>1. 准备</h3><p>开始探究之前, 先回到我们的 <code>objc</code> 源码里面, 新建一个 <code>target</code> , 新建一个 <code>Person</code> 类, 然后开始我们的探索</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// 类</span><br><span class="line">@interface Person : NSObject &#123;</span><br><span class="line">    NSString *name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@property (nonatomic, copy) NSString *sex;</span><br><span class="line">@property (nonatomic, assign) NSInteger age;</span><br><span class="line"></span><br><span class="line">+ (void)person_sayHello;</span><br><span class="line">- (void)person_study;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line">// main.m</span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        // insert code here...</span><br><span class="line">        Person *person = [[Person alloc] init];</span><br><span class="line">        Class pClass = object_getClass(person);</span><br><span class="line">        NSLog(@&quot;%@&quot;, pClass);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>类和元类的创建时机</strong></p>
+</blockquote>
+<p>开始之前我们先看一个东西, 在方法执行之前打一个断点, 然后对 <code>Person</code> 类进行打印, 看一下是否存在。</p>
+<p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb18cf89e5e04tplv-t2oaga2asx-image.image"></p>
+<p>如上图所示, 此时 <code>person</code> 对象还没有被创建, 但是我们对 <code>Person</code> 的类对象进行打印, 发现已经存在在内存当中了。所以在类进行 <code>alloc</code> 操作之前, 类和元类就已经存在了, 说明类和元类在编译时期就已经被创建了。</p>
+<h3 id="2-bits-探索"><a href="#2-bits-探索" class="headerlink" title="2. bits 探索"></a>2. bits 探索</h3><p>想要去探索 <code>bits</code> , 首先要解决如何找到他的问题, 然后才能在内存中对其结构进行一一分析。在上面的结构分析中我们知道, <code>objc_class</code> 内部一共包含 <code>isa</code>、<code>superclass</code>、<code>cache</code> 和 <code>bits</code> 组成, 前面的三位总共占 32 位, 那么接下来就借助指针平移来找到 <code>bits</code> 。</p>
+<h3 id="2-1-找到-bits-的内存地址"><a href="#2-1-找到-bits-的内存地址" class="headerlink" title="2.1 找到 bits 的内存地址"></a>2.1 找到 bits 的内存地址</h3><p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb1a428eaa177tplv-t2oaga2asx-image.image"></p>
+<p><img src="C:/Users/rinna/OneDrive/MarkDown/image/170fb1a69d6895ebtplv-t2oaga2asx-image.image"></p>
+<p>通过指针平移后得到新的地址, 然后进行打印验证得出 <code>bits</code> 的指针地址。</p>
+<h3 id="2-2-关于-class-rw-t"><a href="#2-2-关于-class-rw-t" class="headerlink" title="2.2 关于 class_rw_t"></a>2.2 关于 class_rw_t</h3><p>找到了 <code>bits</code> , 我们上面提到过, <code>bits</code> 可以通过 <code>data()</code> 函数返回一个 <code>class_rw_t</code> 类型的指针对象。所以为了去查看 <code>class_rw_t</code> 的结构, 继续往下面走</p>
+<p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb1c11db219fetplv-t2oaga2asx-image.image"></p>
+<p>上面通过 <code>data()</code> 函数得到了 <code>class_rw_t</code> 类型的指针, 然后又通过打印发现, 果然是我们想要找的内容, 在里面也发现了我们想要寻找的 <code>methods</code> 、<code>properties</code> 和 <code>protocols</code>  。接下来一起看看类的 属性 和 方法是否在这里面。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 关于指针前面的 &quot; * &quot; 符号</span><br><span class="line">// 对于指针而言, 星号一般出现的场合, 一个是指针定义时, 另一个是使用指针时。</span><br><span class="line"></span><br><span class="line">1. int *p</span><br><span class="line">指针定义时前面的星号, 目的是告诉编译器变量 p 是一个指针</span><br><span class="line"></span><br><span class="line">2. *p + 1</span><br><span class="line">使用指针时, 可以理解为 指针的值, 比如上面这里就是 指针指向的值 加上 1 。</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="1-properties-分析"><a href="#1-properties-分析" class="headerlink" title="1. properties 分析"></a>1. properties 分析</h4><p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb1da26e94d12tplv-t2oaga2asx-image.image"></p>
+<p>首先直接打印 <code>properties</code> , 发现内部存储的是一个 <code>list_array_tt</code> 类型的东西, 然后打印他的 <code>list</code>, 发现他是一个 <code>property_list_t</code> 类型的指针, 进行值打印, 又出来一个 <code>entsize_list_tt</code> , 下面是 <code>entsize_list_tt</code> 的声明</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">// 泛型</span><br><span class="line">template &lt;typename Element, typename List, uint32_t FlagMask&gt;</span><br><span class="line">// entsize_list_tt 的声明</span><br><span class="line">struct entsize_list_tt &#123;</span><br><span class="line">    uint32_t entsizeAndFlags;</span><br><span class="line">    uint32_t count;</span><br><span class="line">    Element first;</span><br><span class="line"></span><br><span class="line">    uint32_t entsize() const &#123;</span><br><span class="line">        return entsizeAndFlags &amp; ~FlagMask;</span><br><span class="line">    &#125;</span><br><span class="line">    uint32_t flags() const &#123;</span><br><span class="line">        return entsizeAndFlags &amp; FlagMask;</span><br><span class="line">    &#125;</span><br><span class="line">    Element&amp; getOrEnd(uint32_t i) const &#123; </span><br><span class="line">        assert(i &lt;= count);</span><br><span class="line">        return *(Element *)((uint8_t *)&amp;first + i*entsize()); </span><br><span class="line">    &#125;</span><br><span class="line">    Element&amp; get(uint32_t i) const &#123; </span><br><span class="line">        assert(i &lt; count);</span><br><span class="line">        return getOrEnd(i);</span><br><span class="line">    &#125;</span><br><span class="line">    size_t byteSize() const &#123;</span><br><span class="line">        return byteSize(entsize(), count);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	/*</span><br><span class="line">  	一些函数...</span><br><span class="line">  	*/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上, 关于 <code>template</code> 好像是 <code>C++</code> 里面的东西, 用来做泛型编程的, 有兴趣的可以去查询一下。 <code>entsizeAndFlags</code> 和 <code>count</code> 可以直接打印出来, 重要的是 <code>first</code> , 然后发现有两个函数 <code>getOrEnd() 和 get()</code> , 尝试调用之后发现真的可以得到与我们的属性相关的东西。<strong>但是, 没有找到类的成员变量。</strong></p>
+<h4 id="2-methods"><a href="#2-methods" class="headerlink" title="2. methods"></a>2. methods</h4><p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb237c04cc929tplv-t2oaga2asx-image.image"></p>
+<p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb239ef8a57cbtplv-t2oaga2asx-image.image"></p>
+<p>打印结果如上图, 过程跟 第1步的 <code>properties</code> 一样, 这里不做描述了。可以看到定义的 实例方法 和 属性的 <code>getter,setter </code> 方法都可以找到, 除此之外还有一个 <code>C++</code> 的析构函数 <code>.cxx_destruct</code> 。<strong>但是, 类方法没有在里面</strong></p>
+<h4 id="3-关于-ro"><a href="#3-关于-ro" class="headerlink" title="3. 关于 ro"></a>3. 关于 ro</h4><p>为了寻找 <code>类方法</code> 和 <code>成员变量</code> , 继续对 <code>class_rw_t</code> 的结构进行查看, 发现最有可能在的地方只有可能是 <code>ro</code> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// ro </span><br><span class="line">struct class_ro_t &#123;</span><br><span class="line">    uint32_t flags;</span><br><span class="line">    uint32_t instanceStart;</span><br><span class="line">    uint32_t instanceSize;</span><br><span class="line">#ifdef __LP64__</span><br><span class="line">    uint32_t reserved;</span><br><span class="line">#endif</span><br><span class="line">    const uint8_t * ivarLayout;</span><br><span class="line">    const char * name;</span><br><span class="line">    method_list_t * baseMethodList;</span><br><span class="line">    protocol_list_t * baseProtocols;</span><br><span class="line">    const ivar_list_t * ivars;</span><br><span class="line"></span><br><span class="line">    const uint8_t * weakIvarLayout;</span><br><span class="line">    property_list_t *baseProperties;</span><br><span class="line"></span><br><span class="line">    method_list_t *baseMethods() const &#123;</span><br><span class="line">        return baseMethodList;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在其内部同样发现了关于方法和属性的东西 <code>baseMethodList</code>、<code>baseProperties</code> , 还有一个新的东西 <code>ivars</code> , 接下来来打印一下里面到底有什么 (过程省略, 直接上图):</p>
+<p><img src="https://typora-1255827538.cos.ap-nanjing.myqcloud.com/img/170fb24005d2ebbbtplv-t2oaga2asx-image.image"></p>
+<p>从打印结果可以看出, 不只是声明的成员变量, 属性自动生成的带 “_” 的成员变量也在其中, 所以成员变量存在于 <code>ro</code> 下面的 <code>ivars</code> 中。</p>
+<p><strong>注意: 此处省略了对 <code>baseMethodList</code> 和 <code>baseProperties</code> 的打印, 有兴趣的可以去自己试一下, 你会发现这里同样存储着类的 实例方法 和 属性。</strong></p>
+<h4 id="4-rw-与-ro"><a href="#4-rw-与-ro" class="headerlink" title="4. rw 与 ro"></a>4. rw 与 ro</h4><p>关于 <code>rw</code> 与 <code>ro</code>, 这里猜测 <code>rw</code> 意思为 <code>read write</code>, <code>ro</code> 为 <code>read only</code> 。因为动态性的特性, <code>OC</code> 在编译期保存了一份 <code>类</code> 的数据结构到 <code>ro</code> 中, 然后又在运行时存储另外一份到 <code>rw</code> 中, 给 <code>runtime</code> 去动态的修改使用。</p>
+<p>另外, 我们在 <code>rw</code> 中可以发现 <code>ro</code> 是 <code>const</code> 类型也就是不可变的, 所以存储的 <code>ro</code> 中的任何东西都是不能够改变的, 而 <code>rw</code> 中的 <code>methods 、properties、protocols</code> 则是可以改变的。这也证明了 <code>类</code> 为什么不可以动态添加属性, 因为在添加属性时会伴随着添加成员变量, 而 <code>ivar</code> 存储在 <code>ro</code> 中, 是无法改变的。</p>
+<h3 id="3-类方法的存储位置"><a href="#3-类方法的存储位置" class="headerlink" title="3. 类方法的存储位置"></a>3. 类方法的存储位置</h3><p>前面找到了 <strong>属性</strong> 、<strong>实例方法</strong> 和 <strong>成员变量</strong> , 那么 <strong>类方法</strong> 到底存储在哪里呢? 接下来我们借助 <code>runtime</code> 的 API 来一起测试一下。</p>
+<h4 id="1-作为实例方法"><a href="#1-作为实例方法" class="headerlink" title="1. 作为实例方法"></a>1. 作为实例方法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">// + (void)person_sayHello;</span><br><span class="line">// - (void)person_study;</span><br><span class="line">//</span><br><span class="line">const char *className = object_getClassName(pClass);</span><br><span class="line">Class metaClass = objc_getMetaClass(className);</span><br><span class="line">Method method1 = class_getInstanceMethod(pClass, @selector(person_sayHello));</span><br><span class="line">Method method2 = class_getInstanceMethod(metaClass, @selector(person_sayHello));</span><br><span class="line"></span><br><span class="line">Method method3 = class_getInstanceMethod(pClass, @selector(person_study));</span><br><span class="line">Method method4 = class_getInstanceMethod(metaClass, @selector(person_study));</span><br><span class="line">NSLog(@&quot;%p-%p-%p-%p&quot;,method1,method2,method3,method4);</span><br><span class="line"></span><br><span class="line">打印结果:</span><br><span class="line">0x0-0x100001108-0x100001170-0x0</span><br></pre></td></tr></table></figure>
+
+<p>根据上面打印结果可以总结如下:</p>
+<ul>
+<li><code>person_sayHello</code> 是 <strong>元类对象</strong>的实例方法, 所以存在于<strong>元类</strong>当中, 不存在<strong>类</strong>中</li>
+<li><code>person_study</code> 是<strong>类对象</strong>的实例方法, 所以存在于<strong>类</strong>当中, 不存在<strong>元类</strong>中</li>
+</ul>
+<h4 id="2-作为类方法"><a href="#2-作为类方法" class="headerlink" title="2. 作为类方法"></a>2. 作为类方法</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">// + (void)person_sayHello;</span><br><span class="line">// - (void)person_study;</span><br><span class="line">//</span><br><span class="line">const char *className = object_getClassName(pClass);</span><br><span class="line">Class metaClass = objc_getMetaClass(className);</span><br><span class="line">Method method1 = class_getClassMethod(pClass, @selector(person_sayHello));</span><br><span class="line">Method method2 = class_getClassMethod(metaClass, @selector(person_sayHello));</span><br><span class="line"></span><br><span class="line">Method method3 = class_getClassMethod(pClass, @selector(person_study));</span><br><span class="line">Method method4 = class_getClassMethod(metaClass, @selector(person_study));</span><br><span class="line">NSLog(@&quot;%p-%p-%p-%p&quot;,method1,method2,method3,method4);</span><br><span class="line"></span><br><span class="line">打印结果:</span><br><span class="line">0x100001108-0x100001108-0x0-0x0</span><br></pre></td></tr></table></figure>
+
+<p>根据结果可以看出, 不管是类还是元类, 作为类方法去查找 <code>person_study</code> 方法时都无法获取到, 而去查找 <code>person_sayHello</code> 方法时又都找到了, 这里就有问题了, 那么我们进入到 <code>class_getClassMethod</code> 方法内部实现里去找一下答案:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Method class_getClassMethod(Class cls, SEL sel) &#123;</span><br><span class="line">    if (!cls  ||  !sel) return nil;</span><br><span class="line">    return class_getInstanceMethod(cls-&gt;getMeta(), sel);</span><br><span class="line">&#125;</span><br><span class="line">//</span><br><span class="line">Class getMeta() &#123;</span><br><span class="line">  if (isMetaClass()) return (Class)this;</span><br><span class="line">  else return this-&gt;ISA();</span><br><span class="line">&#125;</span><br><span class="line">//</span><br><span class="line">inline Class </span><br><span class="line">objc_object::ISA() </span><br><span class="line">&#123;</span><br><span class="line">    assert(!isTaggedPointer()); </span><br><span class="line">#if SUPPORT_INDEXED_ISA</span><br><span class="line">    if (isa.nonpointer) &#123;</span><br><span class="line">        uintptr_t slot = isa.indexcls;</span><br><span class="line">        return classForIndex((unsigned)slot);</span><br><span class="line">    &#125;</span><br><span class="line">    return (Class)isa.bits;</span><br><span class="line">#else</span><br><span class="line">    return (Class)(isa.bits &amp; ISA_MASK);</span><br><span class="line">#endif</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到 <code>class_getClassMethod</code> 方法的内部其实也是在调用 <code>class_getInstanceMethod</code> 方法, 不同点在于 <code>getMeta()</code> 方法, 可以看到如果是<strong>元类</strong>调用会直接返回; 如果是<strong>类</strong>调用的话, 会返回 <code>ISA()</code> , 也就是<strong>元类</strong>, 所以不管是在<strong>类</strong>中查找 <code>person_sayHello</code> 方法, 还是在<strong>元类</strong>中查找, 其结果是一样的。</p>
+<blockquote>
+<p><strong>所以, 类方法是存储在元类中的, 实例方法是存储在类中的</strong></p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本次探索对类进行了一系列的研究, 总结如下:</p>
+<ol>
+<li>我们发现类其实也是一个对象, 并且类和元类是在编译时就创建的。</li>
+<li>对类的结构进行了分析, 并且在 <code>class_rw_t</code> 和 <code>ro</code> 里面找到了我们的 <code>属性</code> 和 <code>实例方法</code>, 且仅在 <code>ro</code> 中找到了我们的 <code>成员变量</code>。</li>
+<li>然后后面又对 <code>类方法</code> 的存储位置进行了探索, 发现类方法是存在元类中的。</li>
+</ol>
+<p>最后希望本次的探索对你有所启发, 如果有不对的地方还请各位指出, 谢谢大家。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/12/2020-03-12-iOS%E6%8E%A2%E7%B4%A2%E4%B9%8B--isa%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E5%92%8C%E6%8C%87%E5%90%91%E5%88%86%E6%9E%90/" rel="prev" title="iOS探索之--isa 的初始化和指向分析">
+      <i class="fa fa-chevron-left"></i> iOS探索之--isa 的初始化和指向分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/25/2020-03-25-iOS%E6%8E%A2%E7%B4%A2--%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90(%E4%BA%8C)/" rel="next" title="iOS探索--类的结构分析(二)">
+      iOS探索--类的结构分析(二) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">类的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">类的结构分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Class-isa"><span class="nav-number">2.1.</span> <span class="nav-text">1. Class isa</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Class-superclass"><span class="nav-number">2.2.</span> <span class="nav-text">2. Class superclass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-cache-t-cache"><span class="nav-number">2.3.</span> <span class="nav-text">3. cache_t cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-class-data-bits-t-bits"><span class="nav-number">2.4.</span> <span class="nav-text">4. class_data_bits_t bits</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%84%E6%8E%A2%E7%A9%B6"><span class="nav-number">3.</span> <span class="nav-text">类的结构探究</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%87%86%E5%A4%87"><span class="nav-number">3.1.</span> <span class="nav-text">1. 准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-bits-%E6%8E%A2%E7%B4%A2"><span class="nav-number">3.2.</span> <span class="nav-text">2. bits 探索</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%89%BE%E5%88%B0-bits-%E7%9A%84%E5%86%85%E5%AD%98%E5%9C%B0%E5%9D%80"><span class="nav-number">3.3.</span> <span class="nav-text">2.1 找到 bits 的内存地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%85%B3%E4%BA%8E-class-rw-t"><span class="nav-number">3.4.</span> <span class="nav-text">2.2 关于 class_rw_t</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-properties-%E5%88%86%E6%9E%90"><span class="nav-number">3.4.1.</span> <span class="nav-text">1. properties 分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-methods"><span class="nav-number">3.4.2.</span> <span class="nav-text">2. methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%85%B3%E4%BA%8E-ro"><span class="nav-number">3.4.3.</span> <span class="nav-text">3. 关于 ro</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-rw-%E4%B8%8E-ro"><span class="nav-number">3.4.4.</span> <span class="nav-text">4. rw 与 ro</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E7%B1%BB%E6%96%B9%E6%B3%95%E7%9A%84%E5%AD%98%E5%82%A8%E4%BD%8D%E7%BD%AE"><span class="nav-number">3.5.</span> <span class="nav-text">3. 类方法的存储位置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E4%BD%9C%E4%B8%BA%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95"><span class="nav-number">3.5.1.</span> <span class="nav-text">1. 作为实例方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E4%BD%9C%E4%B8%BA%E7%B1%BB%E6%96%B9%E6%B3%95"><span class="nav-number">3.5.2.</span> <span class="nav-text">2. 作为类方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ccc"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Ccc</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ccc</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

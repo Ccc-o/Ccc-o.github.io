@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1.将 2 个递增的有序链表合并为一个递增的有序链表; 要求结果链表仍然使用两个链表的存储空间, 不另外占用其他的存储空间, 表中不允许有重复的数据 123456789101112131415161718192021222324252627282930313233343536void mergeLinkLikt(LinkList *La, LinkList *Lb, LinkList *Lc) &amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法-链表相关题目">
+<meta property="og:url" content="http://example.com/2020/09/09/2020-09-09-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%85%B3%E9%A2%98%E7%9B%AE/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="1.将 2 个递增的有序链表合并为一个递增的有序链表; 要求结果链表仍然使用两个链表的存储空间, 不另外占用其他的存储空间, 表中不允许有重复的数据 123456789101112131415161718192021222324252627282930313233343536void mergeLinkLikt(LinkList *La, LinkList *Lb, LinkList *Lc) &amp;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-09-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-01T02:57:37.967Z">
+<meta property="article:author" content="Ccc">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2020/09/09/2020-09-09-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%85%B3%E9%A2%98%E7%9B%AE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据结构与算法-链表相关题目 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/09/09/2020-09-09-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%85%B3%E9%A2%98%E7%9B%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ccc">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法-链表相关题目
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-09 00:00:00" itemprop="dateCreated datePublished" datetime="2020-09-09T00:00:00+08:00">2020-09-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-01 10:57:37" itemprop="dateModified" datetime="2022-06-01T10:57:37+08:00">2022-06-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="1"><a href="#1" class="headerlink" title="1."></a>1.</h3><p>将 2 个递增的有序链表合并为一个递增的有序链表; 要求结果链表仍然使用两个链表的存储空间, 不另外占用其他的存储空间, 表中不允许有重复的数据</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mergeLinkLikt</span><span class="params">(LinkList *La, LinkList *Lb, LinkList *Lc)</span> &#123;</span><br><span class="line">    LinkList pa = (*La)-&gt;next;</span><br><span class="line">    LinkList pb = (*Lb)-&gt;next;</span><br><span class="line">    LinkList pc;</span><br><span class="line">    <span class="comment">// 这里的 Lc 是外部传进来的空链表, 先指向 La 的头结点, 然后在 while 循环中逐步移动</span></span><br><span class="line">    <span class="comment">// 利用结点 pc 的移动, 将每次比较后的较小结点逐步链入进去</span></span><br><span class="line">    *Lc = pc = *La;</span><br><span class="line">    <span class="keyword">while</span> (pa &amp;&amp; pb) &#123;</span><br><span class="line">        <span class="keyword">if</span> (pa-&gt;data &lt; pb-&gt;data) &#123;</span><br><span class="line">            <span class="comment">// 移动 pc 至小的结点 pa, 然后继续对 pc 的 next 与 pb 进行比较</span></span><br><span class="line">            pc-&gt;next = pa;</span><br><span class="line">            pc = pa;</span><br><span class="line">            pa = pa-&gt;next;</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span> (pa-&gt;data &gt; pb-&gt;data) &#123;</span><br><span class="line">            <span class="comment">// 移动 pc 至小的结点 pb, 然后继续对 pc 的 next 与 pa 进行比较</span></span><br><span class="line">            pc-&gt;next = pb;</span><br><span class="line">            pc = pb;</span><br><span class="line">            pb = pb-&gt;next;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">// 大小相等的情况, 按照 pa 较小的情况处理, 然后删除当前 pb 结点</span></span><br><span class="line">            <span class="comment">// 继续使用 pa 的 next 与 pb 的 next 执行重复步骤</span></span><br><span class="line">            pc-&gt;next = pa;</span><br><span class="line">            pc = pa;</span><br><span class="line">            pa = pa-&gt;next;</span><br><span class="line">            </span><br><span class="line">            LinkList temp = pb;</span><br><span class="line">            pb = pb-&gt;next;</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">free</span>(temp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 循环结束后, 将不为空的结点的后续加点链接到链表中</span></span><br><span class="line">    pc-&gt;next = pa ? pa : pb;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">free</span>(*Lb);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2"><a href="#2" class="headerlink" title="2."></a>2.</h3><p>已知 2 个链表 A 和 B 分别表示两个集合, 其元素递增排列, 合集一个算法, 用于求出 A 与 B 的交集, 并存储在 A 链表中; 例如: La &#x3D; {2, 4, 6, 8}, Lb &#x3D; {4, 6, 8, 10}, Lc &#x3D; {4, 6, 8}</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 类似于上面第 1 道题的遍历方式</span></span><br><span class="line"><span class="comment">// 不同点在于, 这里只保留交集, 就是只有在相等的情况下才将结点链入表中, 其余情况直接释放</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">intersectionOfLinkList</span><span class="params">(LinkList *La, LinkList *Lb, LinkList *Lc)</span> &#123;</span><br><span class="line">    LinkList pa = (*La)-&gt;next;</span><br><span class="line">    LinkList pb = (*Lb)-&gt;next;</span><br><span class="line">    LinkList temp;</span><br><span class="line">    LinkList pc;</span><br><span class="line">    *Lc = pc = *La;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span> (pa &amp;&amp; pb) &#123;</span><br><span class="line">        <span class="keyword">if</span> (pa-&gt;data &lt; pb-&gt;data) &#123;</span><br><span class="line">            temp = pa;</span><br><span class="line">            pa = pa-&gt;next;</span><br><span class="line">            <span class="built_in">free</span>(temp);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span> (pa-&gt;data == pb-&gt;data) &#123;</span><br><span class="line">            pc-&gt;next = pa;</span><br><span class="line">            pc = pa;</span><br><span class="line">            pa = pa-&gt;next;</span><br><span class="line">            </span><br><span class="line">            temp = pb;</span><br><span class="line">            pb = pb-&gt;next;</span><br><span class="line">            <span class="built_in">free</span>(temp);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            temp = pb;</span><br><span class="line">            pb = pb-&gt;next;</span><br><span class="line">            <span class="built_in">free</span>(temp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 循环结束以后, 判断哪一个表还没有执行结束, 释放剩余的所有结点</span></span><br><span class="line">    <span class="keyword">while</span> (pa) &#123;</span><br><span class="line">        temp = pa;</span><br><span class="line">        pa = pa-&gt;next;</span><br><span class="line">        <span class="built_in">free</span>(temp);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (pb) &#123;</span><br><span class="line">        temp = pb;</span><br><span class="line">        pb = pb-&gt;next;</span><br><span class="line">        <span class="built_in">free</span>(temp);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 最后还需要将 pc 的 next 置空处理, 释放掉链表 Lb</span></span><br><span class="line">    pc-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="built_in">free</span>(*Lb);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3"><a href="#3" class="headerlink" title="3."></a>3.</h3><p>设计一个算法, 将链表中所有节点的链接方向 “原地旋转”, 即要求仅仅利用原表的存储空间. 换句话说, 要求算法空间复杂度为 O(1)</p>
+<p>例如: L &#x3D; {0, 2, 4, 6, 8, 10}, 逆转后 L &#x3D; {10, 8, 6, 4, 2, 0}</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">overLinkList</span><span class="params">(LinkList *La)</span> &#123;</span><br><span class="line">    LinkList p = (*La)-&gt;next;</span><br><span class="line">    LinkList q;</span><br><span class="line">    (*La)-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="comment">// 先将 La 头结点的指向置空</span></span><br><span class="line">    <span class="comment">// 通过遍历从 p 开始往下取结点</span></span><br><span class="line">    <span class="comment">// 然后将取出的结点通过 前插法依次插入到 La 中</span></span><br><span class="line">    <span class="keyword">while</span> (p) &#123;</span><br><span class="line">        q = p-&gt;next;</span><br><span class="line">        p-&gt;next = (*La)-&gt;next;</span><br><span class="line">        (*La)-&gt;next = p;</span><br><span class="line">        p = q;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4"><a href="#4" class="headerlink" title="4."></a>4.</h3><p>设计一个算法, 删除递增有序链表中值大于等于 mink 且小于等于 maxk (mink, maxk 是给定的两个参数, 其值可以和表中元素相同也可以不同) 的所有元素</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">clearLinkListInSection</span><span class="params">(LinkList *La, Element mink, Element maxk)</span> &#123;</span><br><span class="line">    LinkList p = (*La)-&gt;next;</span><br><span class="line">    LinkList q = (*La);</span><br><span class="line">    LinkList temp;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 判断, 如果给定的 mink 和 maxk 无法构成区间, 直接 return</span></span><br><span class="line">    <span class="comment">// 另一种情况 因为链表为递增序列, 如果首元结点的值大于 maxk, 说明链表一定不会在该区间</span></span><br><span class="line">    <span class="keyword">if</span> ((mink &gt; maxk) || (p-&gt;data &gt; maxk)) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 遍历, 对出在区间中的结点进行删除, 需要注意避免链表断裂</span></span><br><span class="line">    <span class="comment">// 对于不在区间中的结点, 进行移位操作</span></span><br><span class="line">    <span class="keyword">while</span> (p) &#123;</span><br><span class="line">        <span class="keyword">if</span> (p-&gt;data &gt;= mink &amp;&amp; p-&gt;data &lt;= maxk) &#123;</span><br><span class="line">            temp = p;</span><br><span class="line">            p = p-&gt;next;</span><br><span class="line">            <span class="built_in">free</span>(temp);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        q-&gt;next = p;</span><br><span class="line">        q = p;</span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    q-&gt;next = p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5"><a href="#5" class="headerlink" title="5."></a>5.</h3><p>设将 n(n &gt; 1) 个整数存放到一维数组 R 中, 试设计一个在时间和空间两方面都尽可能高效的算法; 将 R 中保存的序列循环左移 p 个位置 (0 &lt; p &lt; n) 个位置, 即将 R 中的数据由 (x0, x1, x2, ……, xn-1) 变换为 (xp, xp+1,……, xn-1, x0, x1,……xp-1).</p>
+<p>例如: pre[10] &#x3D; {0, 1, 2, 3, 4, 5,  6, 7, 8, 9}, n &#x3D; 10, p &#x3D; 3, pre[10] &#x3D; {3, 4, 5, 6, 7, 8, 9, 0, 1, 2}</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">moveLinkList</span><span class="params">(LinkList *La, <span class="type">int</span> p)</span> &#123;</span><br><span class="line">    LinkList Lb = (LinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Node));</span><br><span class="line">    initLinkList(&amp;Lb);</span><br><span class="line">    LinkList pb = Lb;</span><br><span class="line">    </span><br><span class="line">    LinkList pa = (*La)-&gt;next;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 循环遍历, 将前面的 p 个结点放入到创建的链表 Lb 中</span></span><br><span class="line">    <span class="comment">// 同时也要注意在 La 中将这些结点移除出去</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; p; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (pa == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;p 值不合法!!!\n&quot;</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        pb-&gt;next = pa;</span><br><span class="line">        (*La)-&gt;next = pa-&gt;next;</span><br><span class="line">        pb = pa;</span><br><span class="line">        pa = pa-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 结束以后需要将 Lb 的尾结点, 也就是 pb 的当前结点置空, 防止错乱</span></span><br><span class="line">    pb-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 找到 La 的尾结点</span></span><br><span class="line">    <span class="keyword">while</span> (pa-&gt;next) &#123;</span><br><span class="line">        pa = pa-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 直接将 La 尾结点的 next 指向 Lb 的首元结点</span></span><br><span class="line">    pa-&gt;next = Lb-&gt;next;</span><br><span class="line">    <span class="comment">// 最后将 Lb 释放掉</span></span><br><span class="line">    Lb-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="built_in">free</span>(Lb);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6"><a href="#6" class="headerlink" title="6."></a>6.</h3><p>已知一个整数序列 A &#x3D; (a0, a1, a2,…an-1), 其中(0 &lt;&#x3D; ai &lt;&#x3D; n), (0 &lt;&#x3D; i &lt;&#x3D; n). 若存在 ap1 &#x3D; ap2 &#x3D; … &#x3D; apm &#x3D; x, 且 m &gt; n&#x2F;2 (0 &lt;&#x3D; pk &lt; n, 1 &lt;&#x3D; k &lt;&#x3D; m), 则称 x 为 A 的主元素. 例如: A &#x3D; (0,5,5,3,5,7,5,5), 则 5 是主元素, 若 B &#x3D; (0,5,5,3,5,1,5,7), 则 B 中没有主元素, 假设 A 中的 n 个元素保存在一个一位数组中, 请设计一个尽可能高效的算法, 找出数组元素中的主元素, 若存在主元素则输出该元素, 否则输出 -1。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">getMainElement</span><span class="params">(<span class="type">int</span> *A, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="comment">// 通过 count 来统计某一个元素的出现次数</span></span><br><span class="line">    <span class="type">int</span> count = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// key 为当前假设的主元素</span></span><br><span class="line">    <span class="type">int</span> key = A[<span class="number">0</span>];</span><br><span class="line">    <span class="comment">// 扫描主元素</span></span><br><span class="line">    <span class="comment">// 因为符合主元素的条件, key 出现的次数 m 必须超过一半</span></span><br><span class="line">    <span class="comment">// 通过循环和判断确定数组里面可能存在主元素 key</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (A[i] == key) &#123;</span><br><span class="line">            count++;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                count--;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                key = A[i];</span><br><span class="line">                count = <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果最后得到的 count 是 大于 0 的, 需要去重新计算一下当前 key 的出现次数</span></span><br><span class="line">    <span class="keyword">if</span> (count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        count = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (A[i] == key) &#123;</span><br><span class="line">                count++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 根据 count 出现的次数, 判断 key 是不是符合主元素的要求</span></span><br><span class="line">    <span class="keyword">return</span> (count &gt; n/<span class="number">2</span>) ? key : <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="7"><a href="#7" class="headerlink" title="7."></a>7.</h3><p>用单链表保存m个整数, 结点的结构为(data,link),且|data|&lt;&#x3D;n(n为正整数). 现在要去设计一个时间复杂度尽可能高效的算法. 对于链表中的data 绝对值相等的结点, 仅保留第一次出现的结点,而删除其余绝对值相等的结点.例如,链表A &#x3D; {21,-15,15,-7,15}, 删除后的链表A&#x3D;{21,-15,-7};</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">deleteEqualNode</span><span class="params">(LinkList *La, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="comment">// 对链表进行非空判断</span></span><br><span class="line">    <span class="keyword">if</span> ((*La)-&gt;next == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 因为 data 里面的数 |data| &lt;= n, 所以这里建立一个长度为 n 的 int 型数组</span></span><br><span class="line">    <span class="type">int</span> *p = alloca(<span class="keyword">sizeof</span>(<span class="type">int</span>) * n);</span><br><span class="line">    <span class="comment">// 初始化数组的值, 将值全部置空</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        p[i] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    LinkList pa = (*La);</span><br><span class="line">    <span class="comment">// 对链表进行循环遍历, 在绝对值对应的下标出现时判断数组里面对应的值</span></span><br><span class="line">    <span class="comment">// 如果值为 0, 将其变为 1, 如果值为 1, 将后面出现的结点删除</span></span><br><span class="line">    <span class="keyword">while</span> (pa) &#123;</span><br><span class="line">        <span class="keyword">if</span> (p[<span class="built_in">abs</span>(pa-&gt;next-&gt;data)] == <span class="number">1</span>) &#123;</span><br><span class="line">            LinkList temp = pa-&gt;next;</span><br><span class="line">            pa-&gt;next = pa-&gt;next-&gt;next;</span><br><span class="line">            pa = pa-&gt;next;</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">free</span>(temp);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            p[<span class="built_in">abs</span>(pa-&gt;next-&gt;data)] = <span class="number">1</span>;</span><br><span class="line">            pa = pa-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/yujialel/LinkListTestDemo">demo 地址</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag"># 数据结构</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/16/2020-07-16--OpenGL-%E7%9F%A9%E9%98%B5%E5%8F%98%E6%8D%A2%E5%92%8C%E7%9F%A9%E9%98%B5%E5%A0%86%E6%A0%88/" rel="prev" title="OpenGL--矩阵变换和矩阵堆栈">
+      <i class="fa fa-chevron-left"></i> OpenGL--矩阵变换和矩阵堆栈
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/01/hello-world/" rel="next" title="Hello World">
+      Hello World <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1"><span class="nav-number">1.</span> <span class="nav-text">1.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2"><span class="nav-number">2.</span> <span class="nav-text">2.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3"><span class="nav-number">3.</span> <span class="nav-text">3.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4"><span class="nav-number">4.</span> <span class="nav-text">4.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5"><span class="nav-number">5.</span> <span class="nav-text">5.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6"><span class="nav-number">6.</span> <span class="nav-text">6.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7"><span class="nav-number">7.</span> <span class="nav-text">7.</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ccc"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Ccc</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ccc</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

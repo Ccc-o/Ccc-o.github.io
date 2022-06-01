@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本次内容我们一起来看一下 图像撕裂 产生的原因, 以及为了降低发生概率是采用何种方案来进行优化的。  相关概念在开始进行探讨之前, 先来了解一下 CPU 和 GPU 到底是什么, 都是用来做什么的, 还有 GPU 和 显卡 是同一个东西吗。 CPU CPU (中央处理器) , 是电子计算机的主要设备之一, 电脑中的核心配件。 在计算机体系结构中, CPU 是对计算机所有硬件资源 (存储器、输入输">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenGL--图像撕裂">
+<meta property="og:url" content="http://example.com/2020/07/09/2020-07-09-OpenGL--%E5%9B%BE%E5%83%8F%E6%92%95%E8%A3%82/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本次内容我们一起来看一下 图像撕裂 产生的原因, 以及为了降低发生概率是采用何种方案来进行优化的。  相关概念在开始进行探讨之前, 先来了解一下 CPU 和 GPU 到底是什么, 都是用来做什么的, 还有 GPU 和 显卡 是同一个东西吗。 CPU CPU (中央处理器) , 是电子计算机的主要设备之一, 电脑中的核心配件。 在计算机体系结构中, CPU 是对计算机所有硬件资源 (存储器、输入输">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/17338278b5fee163tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/173382859fde3eb8tplv-t2oaga2asx-image.image">
+<meta property="og:image" content="c:/Users/rinna/OneDrive/MarkDown/image/17338282af01a564tplv-t2oaga2asx-image.image">
+<meta property="article:published_time" content="2020-07-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-01T02:56:05.343Z">
+<meta property="article:author" content="Ccc">
+<meta property="article:tag" content="OpenGL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:/Users/rinna/OneDrive/MarkDown/image/17338278b5fee163tplv-t2oaga2asx-image.image">
+
+<link rel="canonical" href="http://example.com/2020/07/09/2020-07-09-OpenGL--%E5%9B%BE%E5%83%8F%E6%92%95%E8%A3%82/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>OpenGL--图像撕裂 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/07/09/2020-07-09-OpenGL--%E5%9B%BE%E5%83%8F%E6%92%95%E8%A3%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ccc">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenGL--图像撕裂
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-09 00:00:00" itemprop="dateCreated datePublished" datetime="2020-07-09T00:00:00+08:00">2020-07-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-01 10:56:05" itemprop="dateModified" datetime="2022-06-01T10:56:05+08:00">2022-06-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本次内容我们一起来看一下 图像撕裂 产生的原因, 以及为了降低发生概率是采用何种方案来进行优化的。</p>
+</blockquote>
+<h1 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h1><p>在开始进行探讨之前, 先来了解一下 <code>CPU</code> 和 <code>GPU</code> 到底是什么, 都是用来做什么的, 还有 <code>GPU</code> 和 显卡 是同一个东西吗。</p>
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><ul>
+<li>CPU (中央处理器) , 是电子计算机的主要设备之一, 电脑中的核心配件。</li>
+<li>在计算机体系结构中, CPU 是对计算机所有硬件资源 (存储器、输入输出单元等) 进行控制调配、执行通用运算的核心硬件。 计算机系统中的所有软件层的操作, 最终都会通过指令集映射为 CPU 的操作。</li>
+<li>CPU 的位数一般为 32位 或者 64位, 位数就是处理器能够一次性计算的浮点数的位数。通常情况下位数越高, 运算的速度也就会越快。</li>
+<li><strong>CPU主要是负责多任务管理、调度，它是领导者，负责指挥。</strong></li>
+</ul>
+<h2 id="GPU-与-显卡"><a href="#GPU-与-显卡" class="headerlink" title="GPU 与 显卡"></a>GPU 与 显卡</h2><ul>
+<li>GPU (图像处理芯片), 外表与 CPU 相似。</li>
+<li>GPU 是显卡的核心, GPU、显存、电路板 和 BIOS 固件一起组成了 显卡, 所以 GPU 并不等同于 显卡。</li>
+<li><strong>GPU主要是用于大量的重复计算，它是计算专家，但协议、管理不是它的专长。它的计算执行能力很强。</strong></li>
+<li>显卡 也叫显示适配器, 分为 <code>独立显卡</code> 和 <code>集成显卡</code>。独立显卡主要由 GPU、显存和接口电路组成, 而集成显卡没有独立显存(使用主板上的内存)。</li>
+<li>独立显卡 和 集成显卡 都是有 GPU 的。</li>
+</ul>
+<h1 id="图像撕裂"><a href="#图像撕裂" class="headerlink" title="图像撕裂"></a>图像撕裂</h1><p><img src="C:/Users/rinna/OneDrive/MarkDown/image/17338278b5fee163tplv-t2oaga2asx-image.image"></p>
+<center>图像撕裂</center>
+
+<h2 id="帧"><a href="#帧" class="headerlink" title="帧"></a>帧</h2><p>帧–相当于电影胶片上的每一格镜头, 一帧就是一幅静止的画面, 连续的帧一起就形成了动画等。我们通常说的 <code>帧数</code> 就是在 <code>1 秒钟</code> 内传输的图片的帧数, 也可以理解为<code>GPU(图形处理器)</code> 每秒钟能够刷新几次, 通常用 <code>FPS (Frames Per Second)</code> 来表示。</p>
+<p>每一帧都是一个静止的图像, 这些图像快速的连续显示变形成了运动的假象 (类似于小时候玩的那个翻页的小人书) 。<code>高帧率 (个人理解, 实现一个动画需要的帧数)</code> 可以得到更流畅、更逼真的动画。每秒的帧数 (FPS) 越多, 显示的动作就会越流畅。</p>
+<h2 id="屏幕显示图像的原理"><a href="#屏幕显示图像的原理" class="headerlink" title="屏幕显示图像的原理"></a>屏幕显示图像的原理</h2><p><img src="C:/Users/rinna/OneDrive/MarkDown/image/173382859fde3eb8tplv-t2oaga2asx-image.image"></p>
+<center>屏幕显示图像原理(图片源自网络)</center>
+
+<p>为了更容易理解, 这里以 CRT 显示器进行说明。为了显示图像, CRT 显示器的电子枪按照上图的方式, 从上到下进行逐行扫描, 全部扫描完成后显示器就会呈现出 1 帧画面, 随后电子枪会回到初始位置继续下一次扫描。</p>
+<p>为了把显示器的显示过程和系统的视频控制器进行同步，显示器（或者其他硬件）会用硬件时钟产生一系列的定时信号。当电子枪换到新的一行，准备进行扫描时，显示器会发出一个水平同步信号（horizonal synchronization），简称 HSync；而当一帧画面绘制完成后，电子枪回复到原位，准备画下一帧前，显示器会发出一个垂直同步信号（vertical synchronization），简称 VSync。</p>
+<p>显示器通常以固定频率进行刷新，这个刷新率就是 VSync 信号产生的频率。尽管现在的设备大都是液晶显示屏了，但原理仍然没有变。</p>
+<blockquote>
+<p> <a target="_blank" rel="noopener" href="https://baike.baidu.com/item/CRT%E6%98%BE%E7%A4%BA%E5%99%A8/331814?fr=aladdin">CRT</a> 显示器, 学名为“阴极射线显像管”，是一种使用<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E9%98%B4%E6%9E%81%E5%B0%84%E7%BA%BF%E7%AE%A1/3526331">阴极射线管</a>（Cathode Ray Tube）的显示器。CRT显示器是靠<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E7%94%B5%E5%AD%90%E6%9D%9F">电子束</a>激发屏幕内表面的荧光粉来显示图像的，由于荧光粉被点亮后很快会熄灭，所以电子枪必须循环地不断激发这些点。跟兴趣的可以去网上搜一下, 就是老式的大头显示器。</p>
+</blockquote>
+<h2 id="图像显示过程"><a href="#图像显示过程" class="headerlink" title="图像显示过程"></a>图像显示过程</h2><p><img src="C:/Users/rinna/OneDrive/MarkDown/image/17338282af01a564tplv-t2oaga2asx-image.image"></p>
+<center>图像显示过程 (图片源自网络.)</center>
+
+<ol>
+<li>CPU 计算好要显示的内容然后提交到 GPU</li>
+<li>经过 GPU 渲染完成后, 渲染的结果会放入到 <code>帧缓冲区 (FrameBuffer)</code></li>
+<li>视屏控制器逐行读取帧缓冲区的数据, 经过可能的 <code>数模转换</code> 传递给显示器进行显示</li>
+</ol>
+<h2 id="撕裂原因-和-垂直同步"><a href="#撕裂原因-和-垂直同步" class="headerlink" title="撕裂原因 和 垂直同步"></a>撕裂原因 和 垂直同步</h2><p>在最初的时候, 帧缓冲区只有一个, 这种情况下帧缓冲区的 <code>读取</code> 和 <code>刷新</code> 都会有比较大的效率问题。</p>
+<h3 id="1-双缓冲区"><a href="#1-双缓冲区" class="headerlink" title="1. 双缓冲区"></a>1. 双缓冲区</h3><p>为了解决效率问题, 显示系统后来引入两个缓冲区, 也就是 <code>双缓冲机制</code> 。这种情况下, GPU 会首先渲染好一阵放入到一个缓冲区内让视频控制器去读取, 当下一帧渲染好之后, GPU 会直接把 <code>视频控制器</code> 的指针指向 第二个缓冲区。这样一来效率得到了很大的提升。</p>
+<h3 id="2-画面撕裂"><a href="#2-画面撕裂" class="headerlink" title="2. 画面撕裂"></a>2. 画面撕裂</h3><p>双缓冲区解决了之前单缓冲区的效率问题, 但是又引入了一个新的问题。当视频控制器还没有读取完成时, 也就是屏幕内容还没有显示完成 1 帧画面时, GPU 又将新的一帧内容提交到 帧缓冲区 并且把两个缓冲区进行交换。这时候视频控制器就会把新的 1帧 画面的后半段读取显示到屏幕上, 这就造成了我们开头的图片上的 撕裂现象。</p>
+<h3 id="3-垂直同步"><a href="#3-垂直同步" class="headerlink" title="3. 垂直同步"></a>3. 垂直同步</h3><p>为了解决双缓冲区造成的撕裂问题, GPU 又引入了一个新的机制 <code>垂直同步 (简写 V-Sync)</code> 。当开启垂直同步后, GPU 会等待显示器的 <code>垂直信号(VSync)</code> 发出后, 再去进行新的一帧的渲染和缓冲区更新。这样就解决了 画面撕裂现象, 也增加了画面的流畅度。但是需要消耗更多的计算资源, 也会带来部分延迟。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>以上就是关于画面撕裂的全部内容, 如果有不对的地方或者不懂的地方欢迎在下方留言。 说到画面撕裂很多人可能还会想到 界面卡顿 和 离屏渲染问题, 关于这两个问题将会在以后再进行探讨, 感谢~</p>
+<p>和谐学习, 不急不躁~</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/OpenGL/" rel="tag"># OpenGL</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/08/2020-07-08-OpenGL--%E6%A1%88%E4%BE%8B1-%E7%BB%98%E5%88%B6%E4%B8%80%E4%B8%AA%E4%B8%89%E8%A7%92%E5%BD%A2/" rel="prev" title="OpenGL--案例1-绘制一个三角形">
+      <i class="fa fa-chevron-left"></i> OpenGL--案例1-绘制一个三角形
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/14/2020-07-14-iOS-%E6%8E%A2%E7%B4%A2--%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93/" rel="next" title="iOS 探索--离屏渲染">
+      iOS 探索--离屏渲染 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">相关概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CPU"><span class="nav-number">1.1.</span> <span class="nav-text">CPU</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPU-%E4%B8%8E-%E6%98%BE%E5%8D%A1"><span class="nav-number">1.2.</span> <span class="nav-text">GPU 与 显卡</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E6%92%95%E8%A3%82"><span class="nav-number">2.</span> <span class="nav-text">图像撕裂</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%A7"><span class="nav-number">2.1.</span> <span class="nav-text">帧</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%8F%E5%B9%95%E6%98%BE%E7%A4%BA%E5%9B%BE%E5%83%8F%E7%9A%84%E5%8E%9F%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">屏幕显示图像的原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E6%98%BE%E7%A4%BA%E8%BF%87%E7%A8%8B"><span class="nav-number">2.3.</span> <span class="nav-text">图像显示过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%92%95%E8%A3%82%E5%8E%9F%E5%9B%A0-%E5%92%8C-%E5%9E%82%E7%9B%B4%E5%90%8C%E6%AD%A5"><span class="nav-number">2.4.</span> <span class="nav-text">撕裂原因 和 垂直同步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%8F%8C%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">2.4.1.</span> <span class="nav-text">1. 双缓冲区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%94%BB%E9%9D%A2%E6%92%95%E8%A3%82"><span class="nav-number">2.4.2.</span> <span class="nav-text">2. 画面撕裂</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%9E%82%E7%9B%B4%E5%90%8C%E6%AD%A5"><span class="nav-number">2.4.3.</span> <span class="nav-text">3. 垂直同步</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ccc"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Ccc</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ccc</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

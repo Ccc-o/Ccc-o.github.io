@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="在前面研究了单链表 和 单向循环链表 的结构设计以及对链表的一些修改和查找操作的设计, 接下来再对 双向链表 继续进行研究。从 前面了解到 单向链表 的结构中包含一个后继结点的 指针域, 那么 双向链表 又包含哪些呢?  介绍双向链表 (也叫 双链表)  不同于单向链表 的点在于, 他的每个数据结点包含两个指针域, 这两个指针分别指向该结点的 直接前驱 和 直接后继。所以, 从双向链表的任意结点">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法-双向链表|双向循环链表">
+<meta property="og:url" content="http://example.com/2020/07/01/2020-07-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95--%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8%EF%80%A7%E5%8F%8C%E5%90%91%E5%BE%AA%E7%8E%AF%E9%93%BE%E8%A1%A8/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="在前面研究了单链表 和 单向循环链表 的结构设计以及对链表的一些修改和查找操作的设计, 接下来再对 双向链表 继续进行研究。从 前面了解到 单向链表 的结构中包含一个后继结点的 指针域, 那么 双向链表 又包含哪些呢?  介绍双向链表 (也叫 双链表)  不同于单向链表 的点在于, 他的每个数据结点包含两个指针域, 这两个指针分别指向该结点的 直接前驱 和 直接后继。所以, 从双向链表的任意结点">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701141828909.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701141853596.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701142006412.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701151708780.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701154522168.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701160551307.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701162120874.png">
+<meta property="article:published_time" content="2020-06-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-01T02:52:07.920Z">
+<meta property="article:author" content="Ccc">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200701141828909.png">
+
+<link rel="canonical" href="http://example.com/2020/07/01/2020-07-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95--%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8%EF%80%A7%E5%8F%8C%E5%90%91%E5%BE%AA%E7%8E%AF%E9%93%BE%E8%A1%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据结构与算法-双向链表|双向循环链表 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/07/01/2020-07-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95--%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8%EF%80%A7%E5%8F%8C%E5%90%91%E5%BE%AA%E7%8E%AF%E9%93%BE%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ccc">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据结构与算法-双向链表|双向循环链表
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-01 00:00:00" itemprop="dateCreated datePublished" datetime="2020-07-01T00:00:00+08:00">2020-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-01 10:52:07" itemprop="dateModified" datetime="2022-06-01T10:52:07+08:00">2022-06-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>在前面研究了<code>单链表</code> 和 <code>单向循环链表</code> 的结构设计以及对链表的一些修改和查找操作的设计, 接下来再对 <code>双向链表</code> 继续进行研究。从 前面了解到 <code>单向链表</code> 的结构中包含一个后继结点的 <strong>指针域</strong>, 那么 <code>双向链表</code> 又包含哪些呢?</p>
+</blockquote>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p><code>双向链表</code> (也叫 <code>双链表</code>)  不同于<code>单向链表</code> 的点在于, 他的每个数据结点包含两个<code>指针域</code>, 这两个指针分别指向该结点的 <code>直接前驱</code> 和 <code>直接后继</code>。所以, 从双向链表的任意结点开始, 都能够很方便的找到他的前驱结点和后继结点, 下面通过几张图来看一下他们的结构:</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701141828909.png" alt="image-20200701141828909" style="zoom:50%;" />
+
+<center>结点的结构</center>
+
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701141853596.png" alt="image-20200701141853596" style="zoom:50%;" />
+
+<center>双向链表的结构图</center>
+
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701142006412.png" alt="image-20200701142006412" style="zoom:50%;" />
+
+<center>双向循环链表结构图</center>
+
+<p>从上面的图可以总结如下几点:</p>
+<ol>
+<li>双向链表的结点包含两个指针, <code>prior</code> 前驱指针, 指向当前结点的前一个结点; <code>next</code> 后继指针, 指向当前结点的后一个结点</li>
+<li>在双向循环链表中, 尾结点的后继指向的是 <code>头结点</code> </li>
+<li>双向链表为空时, 头结点指向的是 <code>NULL</code>; 而双向循环链表为空时, 头结点指向的是他本身, 所以此时的链表是一个只包含头结点的环状结构</li>
+</ol>
+<blockquote>
+<p><em>注意: 为了方便处理, 在进行双向链表研究时, 我们这里默认是添加了头结点的。</em></p>
+</blockquote>
+<h1 id="双向链表"><a href="#双向链表" class="headerlink" title="双向链表"></a>双向链表</h1><h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><p>了解了双向链表的结构, 下面来对他的结构进行设计, 其实他的结构通单链表是差不多的, 只不过多了一个指向前驱的指针域, 结构设计如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">typedef int Status; /* Status是函数的类型,其值是函数结果状态代码，如OK等 */</span><br><span class="line">typedef int ElemType; /* ElemType类型根据实际情况而定，这里假设为int */</span><br><span class="line"></span><br><span class="line">struct DoubleNode &#123;</span><br><span class="line">    ElemType data;</span><br><span class="line">    struct DoubleNode *next; // 后继结点</span><br><span class="line">    struct DoubleNode *prior; // 前驱结点</span><br><span class="line">&#125;DoubleNode;</span><br><span class="line"></span><br><span class="line">typedef struct DoubleNode * DoubleLinkList;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><ol>
+<li>创建头结点, 给头结点的两个指针域和数据域赋初值</li>
+<li>添加测试数据, 这里采用的是 <code>尾插法</code> , 需要将 <code>尾结点</code> 的 <code>next</code> 指向新节点, 并将新节点的 <code>prior</code> 指向尾结点</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建双向链表</span></span><br><span class="line">Status <span class="title function_">createDoubleLinkList</span> <span class="params">(DoubleLinkList *L)</span> &#123;</span><br><span class="line">    <span class="comment">// 让 *L 指向头结点</span></span><br><span class="line">    *L = (DoubleLinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DoubleNode));</span><br><span class="line">    <span class="comment">// 非空判断</span></span><br><span class="line">    <span class="keyword">if</span> (*L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 头结点赋值</span></span><br><span class="line">    (*L)-&gt;next = nil;</span><br><span class="line">    (*L)-&gt;prior = nil;</span><br><span class="line">    (*L)-&gt;data = <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">// 添加数据</span></span><br><span class="line">    DoubleLinkList p = *L;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">        <span class="comment">// 创建临时结点</span></span><br><span class="line">        DoubleLinkList temp = (DoubleLinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DoubleNode));</span><br><span class="line">        temp-&gt;prior = <span class="literal">NULL</span>;</span><br><span class="line">        temp-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">        temp-&gt;data = i;</span><br><span class="line">        <span class="comment">// 将创建的结点加入到链表中去</span></span><br><span class="line">        p-&gt;next = temp;</span><br><span class="line">        temp-&gt;prior = p;</span><br><span class="line">        <span class="comment">// 将 P 进行移位, 为了方便进行下次添加结点</span></span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="打印"><a href="#打印" class="headerlink" title="打印"></a>打印</h3><p>遍历打印链表</p>
+<ol>
+<li>首先非空判断肯定需要有的</li>
+<li>这里是通过 <code>while</code> 循环进行打印的, 首先定义一个 temp 临时结点, 然后通过逐步移位值打印, 当 temp 为 NULL 时结束打印</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 遍历打印双向链表</span></span><br><span class="line">Status <span class="title function_">printDoubleLinkList</span><span class="params">(DoubleLinkList L)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;空指针\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    DoubleLinkList temp = L-&gt;next;</span><br><span class="line">    <span class="keyword">if</span> (temp == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;链表不能为空!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;打印的链表为: &quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> (temp) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%d  &quot;</span>, temp-&gt;data);</span><br><span class="line">        temp = temp-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>关于 L 和 *L:</p>
+<p>这里可以看到函数的参数传入的是 L , 而在之前的函数参数传入的是 *L , 那么在什么时候需要 L, 什么时候需要 *L?</p>
+<p>这个问题涉及到了 C 语言 <code>值传递</code>、<code>指针传递</code> 和 <code>引用传递</code> 三种函数参数的传递方式, 具体内容可以去百度一下, 下面就放一张图表来简要说明一下吧:</p>
+<table>
+<thead>
+<tr>
+<th>传递方式</th>
+<th>函数定义</th>
+<th>函数调用</th>
+<th><strong>函数内对a修改的影响</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>值传递</td>
+<td>fun(int a)</td>
+<td>fun(x)</td>
+<td>外部 x 不变</td>
+</tr>
+<tr>
+<td>指针传递</td>
+<td>fun(int *a)</td>
+<td>fun(&amp;x)</td>
+<td>外部 x 同步更改</td>
+</tr>
+<tr>
+<td>引用传递</td>
+<td>fun(int &amp;a)</td>
+<td>fun(x)</td>
+<td>外部 x 同步更改</td>
+</tr>
+</tbody></table>
+</blockquote>
+<h3 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h3><img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701151708780.png" alt="image-20200701151708780" style="zoom:50%;" />
+
+<center>双向链表插入</center>
+
+<p>结点的插入需要考虑两种情况: 插入位置在链表边缘 和 插入位置在链表内部:</p>
+<p>插入链表边缘位置:</p>
+<ol>
+<li>插入位置 1, 因为我们引入了 <code>头结点</code> (位置0 就是我们的 <code>头结点</code>) , 所以这种情况下和插入链表内部的情况一样</li>
+<li>插入位置在最后, 这种情况下就相当于前面初始化里面的尾插法, 不需要过多考虑, 直接插入即可</li>
+</ol>
+<p>插入位置在链表内部:</p>
+<p>需要重点注意的是, 需要首先将 待插入的结点分别于两端的结点建立联系, 不然会导致链表损坏。比如上面的图, 如果我们首先指向步骤 1 和步骤 3, 那么此后 <code>A</code> 的 <code>next</code> 就变成了结点 <code>CC</code> , 就会导致 <code>B</code> 结点丢失。</p>
+<p>代码实现如下:</p>
+<blockquote>
+<p>这里如果插入的位置超过链表的长度是默认插入到最后的, 如果不想插入到最后可以增加判断</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 插入元素</span></span><br><span class="line">Status <span class="title function_">DoubleLinkListInsert</span><span class="params">(DoubleLinkList *L, <span class="type">int</span> i, ElemType a)</span>&#123;</span><br><span class="line">    <span class="comment">// 判断</span></span><br><span class="line">    <span class="keyword">if</span> (i &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;插入位置不合法!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 新建结点</span></span><br><span class="line">    DoubleLinkList p = (DoubleLinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DoubleNode));</span><br><span class="line">    p-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">    p-&gt;prior = <span class="literal">NULL</span>;</span><br><span class="line">    p-&gt;data = a;</span><br><span class="line">    <span class="comment">// 找到插入的位置的前一个结点</span></span><br><span class="line">    DoubleLinkList temp = *L;</span><br><span class="line">    <span class="type">int</span> m = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (temp-&gt;next != <span class="literal">NULL</span> &amp;&amp; m &lt; i) &#123;</span><br><span class="line">        temp = temp-&gt;next;</span><br><span class="line">        m++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 插入</span></span><br><span class="line">    <span class="comment">// 判断插入位置是否为链表尾部</span></span><br><span class="line">    <span class="keyword">if</span> (temp-&gt;next == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        p-&gt;prior = temp;</span><br><span class="line">        temp-&gt;next = p;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        p-&gt;prior = temp;</span><br><span class="line">        p-&gt;next = temp-&gt;next;</span><br><span class="line">        temp-&gt;next = p;</span><br><span class="line">        temp-&gt;next-&gt;prior = p;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701154522168.png" alt="image-20200701154522168" style="zoom:50%;" />
+
+<center>双向链表删除</center>
+
+<ol>
+<li>判断链表是否合法 和 删除位置是否合法</li>
+<li>寻找要删除的结点</li>
+<li>判断结点位置是 <code>尾结点</code> 或者 <code>非尾结点</code>。尾结点, 直接与前一个结点断开; 非尾结点将要删除结点的两端结点建立联系</li>
+<li>需要声明一个临时变量来接收待删除的结点, 因为删除之后需要做 <code>free()</code> 释放结点</li>
+</ol>
+<h4 id="1-根据传入的位置删除指定结点"><a href="#1-根据传入的位置删除指定结点" class="headerlink" title="1. 根据传入的位置删除指定结点"></a>1. 根据传入的位置删除指定结点</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 删除指定位置元素</span></span><br><span class="line">Status <span class="title function_">DoubleLinkListDelete</span><span class="params">(DoubleLinkList *L, <span class="type">int</span> i, ElemType *a)</span>&#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="keyword">if</span> (i &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;删除位置不合法!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 找到删除的位置</span></span><br><span class="line">    DoubleLinkList temp = (*L);</span><br><span class="line">    <span class="keyword">if</span> (temp-&gt;next == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;链表为空!!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> m = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (temp-&gt;next &amp;&amp; m &lt; i) &#123;</span><br><span class="line">        temp = temp-&gt;next;</span><br><span class="line">        m++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (m &lt; i) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;删除位置不合法!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 删除元素</span></span><br><span class="line">    <span class="comment">// 定义一个临时变量接收要删的元素</span></span><br><span class="line">    DoubleLinkList node = temp;</span><br><span class="line">    <span class="keyword">if</span> (node-&gt;next == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        node-&gt;prior-&gt;next = node-&gt;next;</span><br><span class="line">        node-&gt;prior = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        node-&gt;prior-&gt;next = node-&gt;next;</span><br><span class="line">        node-&gt;next-&gt;prior = node-&gt;prior;</span><br><span class="line">    &#125;</span><br><span class="line">    *a = node-&gt;data;</span><br><span class="line">    <span class="built_in">free</span>(node);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-根据传入的值删除指定结点"><a href="#2-根据传入的值删除指定结点" class="headerlink" title="2. 根据传入的值删除指定结点"></a>2. 根据传入的值删除指定结点</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 删除指定数据的元素</span></span><br><span class="line">Status <span class="title function_">DoubleLinkListDelete2</span><span class="params">(DoubleLinkList *L, <span class="type">int</span> data)</span>&#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="keyword">if</span> ((*L)-&gt;next == <span class="literal">NULL</span> || *L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;删除链表不合法!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 找到要删除的结点</span></span><br><span class="line">    DoubleLinkList temp = (*L)-&gt;next;</span><br><span class="line">    <span class="keyword">while</span> (temp-&gt;data != data &amp;&amp; temp-&gt;next != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        temp = temp-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (temp-&gt;data != data) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;要删除的结点不存在!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    DoubleLinkList p = temp;</span><br><span class="line">    <span class="keyword">if</span> (temp-&gt;next == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        p-&gt;prior-&gt;next = p-&gt;next;</span><br><span class="line">        p-&gt;prior = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        p-&gt;prior-&gt;next = p-&gt;next;</span><br><span class="line">        p-&gt;next-&gt;prior = p-&gt;prior;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(p);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 查找指定元素</span></span><br><span class="line">Status <span class="title function_">DoubleLinkListSearch</span><span class="params">(DoubleLinkList L, <span class="type">int</span> data)</span>&#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="keyword">if</span> ((L)-&gt;next == <span class="literal">NULL</span> || L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;查找的链表不合法!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 找到要删除的结点</span></span><br><span class="line">    DoubleLinkList temp = (L)-&gt;next;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (temp-&gt;data != data &amp;&amp; temp-&gt;next != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        temp = temp-&gt;next;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (temp-&gt;data != data) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;所查找的结点不存在!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;所查找的元素位置在 %d\n&quot;</span>, a);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><ol>
+<li>找到要更新的结点</li>
+<li>给要更新的结点重新赋值</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 更新双向链表中某个结点的数据</span></span><br><span class="line">Status <span class="title function_">DoubleLinkListUpdate</span><span class="params">(DoubleLinkList *L, <span class="type">int</span> index, ElemType data)</span> &#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="keyword">if</span> ((*L)-&gt;next == <span class="literal">NULL</span> || *L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;链表不合法!!!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (index &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;位置不合法!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="type">int</span> m = <span class="number">1</span>;</span><br><span class="line">    DoubleLinkList temp = (*L)-&gt;next;</span><br><span class="line">    <span class="keyword">while</span> (temp-&gt;next &amp;&amp; m &lt; index) &#123;</span><br><span class="line">        temp = temp-&gt;next;</span><br><span class="line">        m++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (m == index) &#123;</span><br><span class="line">        temp-&gt;data = data;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;未找到需要更新的元素!\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="结果验证"><a href="#结果验证" class="headerlink" title="结果验证"></a>结果验证</h2><p>验证代码如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> * argv[])</span> &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        <span class="comment">// insert code here...</span></span><br><span class="line">        NSLog(@<span class="string">&quot;Hello, World!&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="type">int</span> a, data;</span><br><span class="line">        DoubleLinkList <span class="built_in">list</span>;</span><br><span class="line">        <span class="comment">// 空指针打印</span></span><br><span class="line">        printDoubleLinkList(<span class="built_in">list</span>);</span><br><span class="line">        <span class="comment">// 创建链表</span></span><br><span class="line">        createDoubleLinkList(&amp;<span class="built_in">list</span>);</span><br><span class="line">        <span class="comment">// 循环打印链表</span></span><br><span class="line">        printDoubleLinkList(<span class="built_in">list</span>);</span><br><span class="line">        <span class="comment">// 插入数据</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入插入的位置和数据: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d %d&quot;</span>, &amp;a, &amp;data);</span><br><span class="line">        DoubleLinkListInsert(&amp;<span class="built_in">list</span>, a, data);</span><br><span class="line">        printDoubleLinkList(<span class="built_in">list</span>);</span><br><span class="line">        <span class="comment">// 删除元素</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入删除元素的位置: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;a);</span><br><span class="line">        DoubleLinkListDelete(&amp;<span class="built_in">list</span>, a, &amp;data);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;删除了数据 %d\n&quot;</span>, data);</span><br><span class="line">        printDoubleLinkList(<span class="built_in">list</span>);</span><br><span class="line">        <span class="comment">// 删除指定内容元素</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入删除元素的内容: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;data);</span><br><span class="line">        DoubleLinkListDelete2(&amp;<span class="built_in">list</span>, data);</span><br><span class="line">        printDoubleLinkList(<span class="built_in">list</span>);</span><br><span class="line">        <span class="comment">// 查找指定元素</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入查找元素的内容: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;data);</span><br><span class="line">        DoubleLinkListSearch(<span class="built_in">list</span>, data);</span><br><span class="line">        <span class="comment">// 更新指定元素的值</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入需要更新元素的位置和更新后的值: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d %d&quot;</span>, &amp;a, &amp;data);</span><br><span class="line">        DoubleLinkListUpdate(&amp;<span class="built_in">list</span>, a, data);</span><br><span class="line">        printDoubleLinkList(<span class="built_in">list</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印结果:</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701160551307.png" alt="image-20200701160551307" style="zoom:50%;" />
+
+
+
+<h1 id="双向循环链表"><a href="#双向循环链表" class="headerlink" title="双向循环链表"></a>双向循环链表</h1><p>根据文章开头的两种结构图片可以看出来, 双向链表 与 双向循环链表 的主要区别在于后者的尾结点是跟头结点链接到一起的, 所以两者在结构设计上是完全一样的, 不同的地方在于对于尾结点的判断等, 下面直接开始部分算法的实现。</p>
+<h3 id="初始化-1"><a href="#初始化-1" class="headerlink" title="初始化"></a>初始化</h3><p>在尾插法插入节点之后, 需要将尾结点指向头结点</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建双向循环链表</span></span><br><span class="line">Status <span class="title function_">createLinkList</span><span class="params">(DoubleRepeatLinkList *L)</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 创建头结点</span></span><br><span class="line">    *L = (DoubleRepeatLinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DoubleNode));</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (*L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 赋初值</span></span><br><span class="line">    (*L)-&gt;next = (*L);</span><br><span class="line">    (*L)-&gt;prior = (*L);</span><br><span class="line">    (*L)-&gt;data = <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">// 添加子节点, 后插法</span></span><br><span class="line">    DoubleRepeatLinkList p = (*L);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">        DoubleRepeatLinkList temp = (DoubleRepeatLinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DoubleNode));</span><br><span class="line">        temp-&gt;data = i;</span><br><span class="line">        p-&gt;next-&gt;prior = temp;</span><br><span class="line">        p-&gt;next = temp;</span><br><span class="line">        temp-&gt;prior = p;</span><br><span class="line">        temp-&gt;next = (*L);</span><br><span class="line">        </span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="打印-1"><a href="#打印-1" class="headerlink" title="打印"></a>打印</h3><p>区别于双向链表的 <code>NULL</code> 判断, 这里对于结尾的判断变成了 <code>p-&gt;next == L</code> 。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 打印双向循环链表</span></span><br><span class="line">Status <span class="title function_">printDoubleRepeatLinkList</span><span class="params">(DoubleRepeatLinkList L)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;打印的链表不合法\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    DoubleRepeatLinkList p = L-&gt;next;</span><br><span class="line">    <span class="keyword">if</span> (p == L) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;打印的链表为空表\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;双向循环链表打印结果为: &quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> (p != L) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%d &quot;</span>, p-&gt;data);</span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="插入-1"><a href="#插入-1" class="headerlink" title="插入"></a>插入</h3><ol>
+<li>遍历链表时的尾结点判断变了</li>
+<li>在插入操作的时候不再需要进行 <code>尾结点</code> 判断处理了</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 插入元素</span></span><br><span class="line">Status <span class="title function_">LinkListInsert</span><span class="params">(DoubleRepeatLinkList *L, <span class="type">int</span> i, ElemType data)</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (*L == <span class="literal">NULL</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 找到要插入位置的前一个元素</span></span><br><span class="line">    DoubleRepeatLinkList p = (*L);</span><br><span class="line">    <span class="type">int</span> m = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (p-&gt;next != (*L) &amp;&amp; m &lt; i) &#123;</span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">        m++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    DoubleRepeatLinkList temp = (DoubleRepeatLinkList)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DoubleNode));</span><br><span class="line">    temp-&gt;data = data;</span><br><span class="line">    temp-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">    temp-&gt;prior = <span class="literal">NULL</span>;</span><br><span class="line">    </span><br><span class="line">    p-&gt;next-&gt;prior = temp;</span><br><span class="line">    temp-&gt;next = p-&gt;next;</span><br><span class="line">    p-&gt;next = temp;</span><br><span class="line">    temp-&gt;prior = p;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="删除-1"><a href="#删除-1" class="headerlink" title="删除"></a>删除</h3><p>变化的地方同插入操作</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据下标删除元素</span></span><br><span class="line">Status <span class="title function_">LinkListDeleteNode</span><span class="params">(DoubleRepeatLinkList *L, <span class="type">int</span> index, ElemType *data)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (*L == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;链表不合法\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ((*L)-&gt;next == *L) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;链表为空表\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (index &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;下标不合法\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 根据下标找到要删除的元素</span></span><br><span class="line">    DoubleRepeatLinkList p = (*L);</span><br><span class="line">    <span class="type">int</span> a = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (a &lt; index &amp;&amp; p-&gt;next != (*L)) &#123;</span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (p-&gt;next == (*L) &amp;&amp; a &lt; index) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;未找到要删除的结点\n\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 删除找到的元素</span></span><br><span class="line">    DoubleRepeatLinkList temp = p;</span><br><span class="line">    data = &amp;(temp-&gt;data);</span><br><span class="line">    temp-&gt;prior-&gt;next = temp-&gt;next;</span><br><span class="line">    temp-&gt;next-&gt;prior = temp-&gt;prior;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="built_in">free</span>(temp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p>验证代码:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> * argv[])</span> &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        <span class="comment">// insert code here...</span></span><br><span class="line">        NSLog(@<span class="string">&quot;Hello, World!&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="type">int</span> i, data;</span><br><span class="line">        </span><br><span class="line">        DoubleRepeatLinkList <span class="built_in">list</span>;</span><br><span class="line">        createLinkList(&amp;<span class="built_in">list</span>);</span><br><span class="line">        printDoubleRepeatLinkList(<span class="built_in">list</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;插入元素\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入插入元素的位置和值: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d %d&quot;</span>, &amp;i, &amp;data);</span><br><span class="line">        LinkListInsert(&amp;<span class="built_in">list</span>, i, data);</span><br><span class="line">        printDoubleRepeatLinkList(<span class="built_in">list</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;删除元素\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;请输入要删除元素的位置: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;i);</span><br><span class="line">        LinkListDeleteNode(&amp;<span class="built_in">list</span>, i, &amp;data);</span><br><span class="line">        printDoubleRepeatLinkList(<span class="built_in">list</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>打印结果:</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200701162120874.png" alt="image-20200701162120874" style="zoom:50%;" />
+
+
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本次主要内容为对 <code>双向链表</code> 和 <code>双向循环链表</code> 的相关算法设计, 以及两者在结构和算法上需要注意的一些区别。关于双向链表的内容就这些了, 如果有不对的地方还请指正, 感谢 !!!</p>
+<p>和谐学习, 不急不躁~</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag"># 数据结构</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/11/2020-04-11-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E5%8D%95%E5%90%91%E9%93%BE%E8%A1%A8%E4%B8%8E%E5%8D%95%E5%90%91%E5%BE%AA%E7%8E%AF%E9%93%BE%E8%A1%A8/" rel="prev" title="数据结构与算法-单向链表与单向循环链表">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法-单向链表与单向循环链表
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/02/2020-07-02-OpenGL--%E7%9B%B8%E5%85%B3%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A/" rel="next" title="OpenGL--相关名词解释">
+      OpenGL--相关名词解释 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8"><span class="nav-number">2.</span> <span class="nav-text">双向链表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.1.</span> <span class="nav-text">设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">2.1.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%93%E5%8D%B0"><span class="nav-number">2.1.2.</span> <span class="nav-text">打印</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5"><span class="nav-number">2.1.3.</span> <span class="nav-text">插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">2.1.4.</span> <span class="nav-text">删除</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E6%A0%B9%E6%8D%AE%E4%BC%A0%E5%85%A5%E7%9A%84%E4%BD%8D%E7%BD%AE%E5%88%A0%E9%99%A4%E6%8C%87%E5%AE%9A%E7%BB%93%E7%82%B9"><span class="nav-number">2.1.4.1.</span> <span class="nav-text">1. 根据传入的位置删除指定结点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%A0%B9%E6%8D%AE%E4%BC%A0%E5%85%A5%E7%9A%84%E5%80%BC%E5%88%A0%E9%99%A4%E6%8C%87%E5%AE%9A%E7%BB%93%E7%82%B9"><span class="nav-number">2.1.4.2.</span> <span class="nav-text">2. 根据传入的值删除指定结点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.5.</span> <span class="nav-text">查找</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0"><span class="nav-number">2.1.6.</span> <span class="nav-text">更新</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C%E9%AA%8C%E8%AF%81"><span class="nav-number">2.2.</span> <span class="nav-text">结果验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8C%E5%90%91%E5%BE%AA%E7%8E%AF%E9%93%BE%E8%A1%A8"><span class="nav-number">3.</span> <span class="nav-text">双向循环链表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-1"><span class="nav-number">3.0.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%93%E5%8D%B0-1"><span class="nav-number">3.0.2.</span> <span class="nav-text">打印</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5-1"><span class="nav-number">3.0.3.</span> <span class="nav-text">插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4-1"><span class="nav-number">3.0.4.</span> <span class="nav-text">删除</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">3.1.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ccc"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Ccc</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ccc</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

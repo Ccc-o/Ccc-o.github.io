@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一. Flutter 安装1. 下载 Flutter SDK① 可以选择去 官网 下载     进入官网, 右上角选择 “Get started”, 然后在后面的页面选择自己需要的版本, 我这里使用的 “macOS”, 包括后面的问题也都是针对 Mac 系统的。这种方式存在一个问题, 就是国内网络可能会比较慢, 下面通过另外一种方式去获取 SDK。 ② 网上去找国内的一些镜像文件下载 关于镜像有很">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flutter 安装与环境搭建">
+<meta property="og:url" content="http://example.com/2020/04/11/2020-05-26-Flutter%20%E5%AE%89%E8%A3%85%E5%92%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一. Flutter 安装1. 下载 Flutter SDK① 可以选择去 官网 下载     进入官网, 右上角选择 “Get started”, 然后在后面的页面选择自己需要的版本, 我这里使用的 “macOS”, 包括后面的问题也都是针对 Mac 系统的。这种方式存在一个问题, 就是国内网络可能会比较慢, 下面通过另外一种方式去获取 SDK。 ② 网上去找国内的一些镜像文件下载 关于镜像有很">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526155101456.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526155555252.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526160106677.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526161636604.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526175832490.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526180713213.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526181200206.png">
+<meta property="og:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526181351246.png">
+<meta property="article:published_time" content="2020-04-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-01T02:51:17.055Z">
+<meta property="article:author" content="Ccc">
+<meta property="article:tag" content="Flutter">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/Users/yujialei/Library/Application%20Support/typora-user-images/image-20200526155101456.png">
+
+<link rel="canonical" href="http://example.com/2020/04/11/2020-05-26-Flutter%20%E5%AE%89%E8%A3%85%E5%92%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Flutter 安装与环境搭建 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/04/11/2020-05-26-Flutter%20%E5%AE%89%E8%A3%85%E5%92%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ccc">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Flutter 安装与环境搭建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-11 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-11T00:00:00+08:00">2020-04-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-01 10:51:17" itemprop="dateModified" datetime="2022-06-01T10:51:17+08:00">2022-06-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Flutter/" itemprop="url" rel="index"><span itemprop="name">Flutter</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="一-Flutter-安装"><a href="#一-Flutter-安装" class="headerlink" title="一. Flutter 安装"></a>一. Flutter 安装</h1><h2 id="1-下载-Flutter-SDK"><a href="#1-下载-Flutter-SDK" class="headerlink" title="1. 下载 Flutter SDK"></a><strong>1. 下载 Flutter SDK</strong></h2><p>① 可以选择去 <a target="_blank" rel="noopener" href="https://flutter.dev/">官网</a> 下载</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526155101456.png" alt="image-20200526155101456" style="zoom:50%;" />
+
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526155555252.png" alt="image-20200526155555252" style="zoom:50%;" />
+
+<p>进入官网, 右上角选择 “Get started”, 然后在后面的页面选择自己需要的版本, 我这里使用的 “macOS”, 包括后面的问题也都是针对 Mac 系统的。这种方式存在一个问题, 就是国内网络可能会比较慢, 下面通过另外一种方式去获取 SDK。</p>
+<p>② 网上去找国内的一些镜像文件下载</p>
+<p>关于镜像有很多地方去找, 我这里选择的是 <a target="_blank" rel="noopener" href="https://mirror.tuna.tsinghua.edu.cn/">清华大学开源软件镜像</a> 去下载的, 打开镜像地址, 然后直接搜索 “flutter” 就可以看到要找的镜像了</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526160106677.png" alt="image-20200526160106677" style="zoom:50%;" />
+
+<p>这里的第一个就是我们需要的镜像, 然后点击后面的问号可以查看镜像获取方法, 如下图</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526161636604.png" alt="image-20200526161636604" style="zoom:50%;" />
+
+<p>具体的步骤非常详细, 这里不做赘述。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 可以看到上面的命令是将镜像配置到 .bashrc 里面的</span></span><br><span class="line"><span class="comment">// 在配置完成以后最后执行以下下面这行代码将 .bashrc 重新加载以下</span></span><br><span class="line">$ source ~/.bashrc</span><br><span class="line"><span class="comment">// 然后在到自己想要的目录下面进行 clone 就可以了</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-配置-Flutter-环境变量"><a href="#2-配置-Flutter-环境变量" class="headerlink" title="2. 配置 Flutter 环境变量"></a><strong>2. 配置 Flutter 环境变量</strong></h2><blockquote>
+<p>因为Flutter 在运行的时候, 有时候需要去官方下载所需要的资源. 所以如果没有配置镜像的话, 会非常的慢. 这里如果在第一步进行过镜像设置的话也可以使用第一步设置的镜像。</p>
+</blockquote>
+<p>这里我选择对 <code>Shell</code> 的配置文件进行配置</p>
+<p>如果系统默认的是 <code>bash</code>(老版系统) 就选择在 <code>.bash_profile</code> 文件进行配置</p>
+<p>如果系统默认的是 <code>zsh</code>, 就选择在 <code>.zshrc</code> 文件进行配置</p>
+<p>① 配置 Flutter 镜像</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#Flutter 镜像配置</span><br><span class="line">$ export PUB_HOSTED_URL=https:<span class="comment">//pub.flutter-io.cn</span></span><br><span class="line">$ export FLUTTER_STORAGE_BASE_URL=https:<span class="comment">//storage.flutter-io.cn</span></span><br></pre></td></tr></table></figure>
+
+<p>镜像源也可以使用上面第一步的</p>
+<p>② 配置 Flutter 环境变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#Flutter 配置</span><br><span class="line">$ export FLUTTER=~/flutter/bin 		<span class="comment">// Flutter路径,我的是在 home 下面的, 需要根据自己放的位置配置</span></span><br><span class="line">$ export PATH=$FLUTTER:$PATH</span><br></pre></td></tr></table></figure>
+
+<p>③ 重新载入配置</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#你自己的配置文件路径</span><br><span class="line">$ source ~/.zshrc		<span class="comment">// 需要改成你自己的文件路径</span></span><br></pre></td></tr></table></figure>
+
+<p>④ 检查 Flutter 配置结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ flutter doctor</span><br></pre></td></tr></table></figure>
+
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526175832490.png" alt="image-20200526175832490" style="zoom:50%;" />
+
+<p>这里如果没有安装 <strong>Android Studio</strong> 的话, 第2个和第4个应该是 ❌ 的, 接下来进行安装 <strong>Android Studio</strong>。</p>
+<blockquote>
+<p>ps: 这里你可能会发现, 你的系统默认的是 <code>zsh</code>, 但是你找不到 <code>.zshrc</code> 文件</p>
+<p>解决办法 :</p>
+<ol>
+<li>使用 <code>touch ~/.zshrc</code> 命令创建一个 <code>.zshrc</code> 文件, (在执行 source 时可能会出现没有执行权限的问题, 此时需要执行 <code>chmod 755 ~/.zshrc</code> 重新分配权限, 具体的指令操作可以查看 <code>Linux</code> 相关指令)</li>
+<li>安装后面将要说到的 <code>iTerm2</code> 工具, 然后安装 <code>oh my zsh</code> , 他会帮我们生成 <code>.zshrc</code> 文件, 然后按上述步骤进行配置就可以了 (关于 iTerm2 工具可以去搜一下, 安装步骤也很简单, 如果安装过程中有问题可以在评论区进行回复。)</li>
+</ol>
+</blockquote>
+<h1 id="二-安装-Android-Studio"><a href="#二-安装-Android-Studio" class="headerlink" title="二. 安装 Android Studio"></a>二. 安装 Android Studio</h1><p>首先, Android Studio 的下载可以直接去 <a target="_blank" rel="noopener" href="https://developer.android.google.cn/studio">国内官网</a> 下载, 安装步骤此处省略, 进入后面的配置环境。</p>
+<h2 id="1-配置-Android-SDK"><a href="#1-配置-Android-SDK" class="headerlink" title="1. 配置 Android SDK"></a>1. 配置 Android SDK</h2><img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526180713213.png" alt="image-20200526180713213" style="zoom:50%;" />
+
+<p>在安装好之后首次打开, 一般会提醒我们去下载 SDK, 直接按默认的去下载就可以了。 全程无需翻墙, 稍微等一会就可以了。</p>
+<h2 id="2-安装-Android-Studio-插件"><a href="#2-安装-Android-Studio-插件" class="headerlink" title="2. 安装 Android Studio 插件"></a>2. 安装 Android Studio 插件</h2><ol>
+<li><p>在配置界面找到 <code>Plugins</code> 插件, 搜索 <code>Flutter</code> 进行安装</p>
+</li>
+<li><p>有可能会提示需要首先安装 <code>Dart</code> 才能安装 <code>Flutter</code>, 那么就先去安装 <code>Dart</code> 插件</p>
+</li>
+<li><p>安装好后, 重启 <code>Android Studio</code></p>
+</li>
+</ol>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526181200206.png" alt="image-20200526181200206" style="zoom:50%;" />
+
+<p>界面如果出现这个东西, 证明安装成功。</p>
+<h2 id="3-许可证问题"><a href="#3-许可证问题" class="headerlink" title="3. 许可证问题"></a>3. 许可证问题</h2><p>回过头去再次执行 <code>flutter doctor</code>, 有可能会报错</p>
+<img src="/Users/yujialei/Library/Application Support/typora-user-images/image-20200526181351246.png" alt="image-20200526181351246" style="zoom:50%;" />
+
+<p>(偷的图)</p>
+<p>执行下面的代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ flutter doctor --android-licenses</span><br></pre></td></tr></table></figure>
+
+<p>再次检查一下, 应该已经解决了</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Flutter/" rel="tag"># Flutter</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/04/2020-04-04-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95--%E9%A1%BA%E5%BA%8F%E8%A1%A8/" rel="prev" title="数据结构与算法--顺序表">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法--顺序表
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/11/2020-04-11-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E5%8D%95%E5%90%91%E9%93%BE%E8%A1%A8%E4%B8%8E%E5%8D%95%E5%90%91%E5%BE%AA%E7%8E%AF%E9%93%BE%E8%A1%A8/" rel="next" title="数据结构与算法-单向链表与单向循环链表">
+      数据结构与算法-单向链表与单向循环链表 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-Flutter-%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">一. Flutter 安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%8B%E8%BD%BD-Flutter-SDK"><span class="nav-number">1.1.</span> <span class="nav-text">1. 下载 Flutter SDK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%85%8D%E7%BD%AE-Flutter-%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">1.2.</span> <span class="nav-text">2. 配置 Flutter 环境变量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%89%E8%A3%85-Android-Studio"><span class="nav-number">2.</span> <span class="nav-text">二. 安装 Android Studio</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%85%8D%E7%BD%AE-Android-SDK"><span class="nav-number">2.1.</span> <span class="nav-text">1. 配置 Android SDK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%AE%89%E8%A3%85-Android-Studio-%E6%8F%92%E4%BB%B6"><span class="nav-number">2.2.</span> <span class="nav-text">2. 安装 Android Studio 插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%AE%B8%E5%8F%AF%E8%AF%81%E9%97%AE%E9%A2%98"><span class="nav-number">2.3.</span> <span class="nav-text">3. 许可证问题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ccc"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Ccc</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ccc</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
